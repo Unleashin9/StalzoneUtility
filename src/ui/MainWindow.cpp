@@ -1,6 +1,6 @@
 ﻿#include "MainWindow.h"
 
-// Конкретные виджеты подключаем здесь — в .cpp, а не в .h.
+// Подключаем конкретные виджеты
 #include <QListWidget>
 #include <QStackedWidget>
 #include <QLabel>
@@ -8,78 +8,41 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-// Добавляем QDebug для вывода в консоль (для теста API)
-#include <QDebug>
-
-#include <QJsonArray>
-// Подключаем наш класс для работы с API
+// Подключаем наш API и новую страницу аукциона
 #include "api/StalzoneAPI.h"
+#include "ui/pages/AuctionWindow.h"
 
-// Конструктор. Порядок инициализации: сначала база (QMainWindow),
-// потом члены класса (у нас = nullptr по умолчанию, ничего писать не надо).
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
-    // Заголовок окна и стартовый размер.
     setWindowTitle("STALZONE Utility — v0.1.0");
-    resize(1200, 750);  // Разумный дефолт для десктопа
+    resize(1200, 750);
 
-    // Собираем интерфейс.
+    // 1. Сначала создаем API-менеджер.
+    // Передаем 'this' в качестве родителя, чтобы Qt автоматически удалила его
+    // при закрытии главного окна (защита от утечек памяти).
+    m_api = new StalzoneAPI(this);
+
+    // 2. Собираем интерфейс.
     setupUi();
 
-    // СВЯЗЫВАЕМ сигнал и слот:
-    // QListWidget испускает сигнал currentRowChanged(int) каждый раз,
-    // когда пользователь меняет выделенный пункт.
-    // Мы соединяем его со слотом QStackedWidget::setCurrentIndex,
-    // который просто переключает видимую страницу на ту же позицию.
+    // 3. Связываем меню слева со стопкой страниц справа.
     connect(m_sidebar, &QListWidget::currentRowChanged,
         m_pages, &QStackedWidget::setCurrentIndex);
-
-    // =========================================================
-    // ВРЕМЕННЫЙ ТЕСТ API (потом удалим, когда перейдем к UI аукциона)
-    // =========================================================
-    auto* api = new StalzoneAPI(this);
-
-    // Слушаем сигнал об успешном получении лотов
-    connect(api, &StalzoneAPI::lotsReceived, this, [](const QJsonArray& lots) {
-        qDebug() << "=== УСПЕХ! ===";
-        qDebug() << "Получено лотов:" << lots.size();
-        if (!lots.isEmpty()) {
-            qDebug() << "Первый лот:" << lots.first().toObject();
-        }
-        });
-
-    // Слушаем сигнал об ошибке
-    connect(api, &StalzoneAPI::errorOccurred, this, [](const QString& err) {
-        qDebug() << "=== ОШИБКА API ===";
-        qDebug() << err;
-        });
-
-    // Делаем тестовый запрос: регион "ru", предмет "zyv9"
-    api->fetchAuctionLots("ru", "zyv9");
-    // =========================================================
 }
 
 void MainWindow::setupUi()
 {
-    // CentralWidget — это "тело" QMainWindow (без меню и статус-бара).
-    // Qt требует, чтобы у QMainWindow был центральный виджет. Создаём пустой.
     auto* central = new QWidget(this);
     setCentralWidget(central);
 
-    // Главный layout — горизонтальный: слева sidebar, справа pages.
     auto* mainLayout = new QHBoxLayout(central);
-
-    // Отступы (margin) и промежутки (spacing). 0 отступов = панели прижаты к краям.
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // Создаём части интерфейса.
     createSidebar();
     createPages();
 
-    // Добавляем в layout. Коэффициенты "1" и "4" — соотношение ширины:
-    // sidebar займёт ~1/5, pages — ~4/5.
     mainLayout->addWidget(m_sidebar, 1);
     mainLayout->addWidget(m_pages, 4);
 }
@@ -87,11 +50,9 @@ void MainWindow::setupUi()
 void MainWindow::createSidebar()
 {
     m_sidebar = new QListWidget(this);
-
-    // Фиксированная ширина, чтобы меню не расползалось.
     m_sidebar->setFixedWidth(220);
 
-    // Стилизуем через CSS-подобный QSS. Простой тёмный стиль — потом доработаем.
+    // Стилизация бокового меню (тёмная тема)
     m_sidebar->setStyleSheet(
         "QListWidget {"
         "  background-color: #1e1e1e;"
@@ -104,12 +65,11 @@ void MainWindow::createSidebar()
         "  padding: 10px 16px;"
         "}"
         "QListWidget::item:selected {"
-        "  background-color: #2d5a27;"   // Наш "сталкерский" зелёный
+        "  background-color: #2d5a27;"
         "  color: #ffffff;"
         "}"
     );
 
-    // Пункты меню — по одному на будущий раздел.
     const QStringList sections = {
         "🏠  Главная",
         "🧮  Калькуляторы",
@@ -119,8 +79,6 @@ void MainWindow::createSidebar()
         "👤  Игроки"
     };
     m_sidebar->addItems(sections);
-
-    // Выделяем первую строку по умолчанию.
     m_sidebar->setCurrentRow(0);
 }
 
@@ -128,41 +86,53 @@ void MainWindow::createPages()
 {
     m_pages = new QStackedWidget(this);
 
-    // QStackedWidget — это "стопка карточек", видна только одна.
-    // Для MVP на каждую секцию — простая заглушка с названием.
-    // Позже заменим заглушки настоящими виджетами-разделами.
-    const QStringList sections = {
-        "Главная",
-        "Калькуляторы",
-        "База предметов",
-        "Убежище",
-        "Аукцион",
-        "Игроки"
-    };
+    // --- 0. Главная (заглушка) ---
+    auto* homePage = new QWidget(this);
+    homePage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
+    auto* homeLayout = new QVBoxLayout(homePage);
+    auto* homeLabel = new QLabel("<h1>Добро пожаловать в STALZONE Utility</h1>", homePage);
+    homeLabel->setAlignment(Qt::AlignCenter);
+    homeLayout->addWidget(homeLabel);
+    m_pages->addWidget(homePage);
 
-    for (const QString& title : sections) {
-        // Создаём простой виджет-страницу.
-        auto* page = new QWidget(this);
+    // --- 1. Калькуляторы (заглушка) ---
+    auto* calcPage = new QWidget(this);
+    calcPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
+    auto* calcLayout = new QVBoxLayout(calcPage);
+    auto* calcLabel = new QLabel("<h1>Калькуляторы (в разработке)</h1>", calcPage);
+    calcLabel->setAlignment(Qt::AlignCenter);
+    calcLayout->addWidget(calcLabel);
+    m_pages->addWidget(calcPage);
 
-        // --- ТВОЯ МИНИ-ЗАДАЧА (Тёмная тема) ---
-        // Задаем странице тёмный фон, чтобы он совпадал с сайдбаром
-        page->setStyleSheet("background-color: #1e1e1e;");
-        // --------------------------------------
+    // --- 2. База предметов (заглушка) ---
+    auto* dbPage = new QWidget(this);
+    dbPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
+    auto* dbLayout = new QVBoxLayout(dbPage);
+    auto* dbLabel = new QLabel("<h1>База предметов (в разработке)</h1>", dbPage);
+    dbLabel->setAlignment(Qt::AlignCenter);
+    dbLayout->addWidget(dbLabel);
+    m_pages->addWidget(dbPage);
 
-        auto* layout = new QVBoxLayout(page);
+    // --- 3. Убежище (заглушка) ---
+    auto* hideoutPage = new QWidget(this);
+    hideoutPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
+    auto* hideoutLayout = new QVBoxLayout(hideoutPage);
+    auto* hideoutLabel = new QLabel("<h1>Убежище (в разработке)</h1>", hideoutPage);
+    hideoutLabel->setAlignment(Qt::AlignCenter);
+    hideoutLayout->addWidget(hideoutLabel);
+    m_pages->addWidget(hideoutPage);
 
-        auto* label = new QLabel(
-            QString("<h1>%1</h1><p>Раздел в разработке...</p>").arg(title),
-            page
-        );
-        label->setAlignment(Qt::AlignCenter);
+    // --- 4. АУКЦИОН (реальная страница) ---
+    // Создаем наш новый виджет и передаем ему API для запросов.
+    auto* auctionWindow = new AuctionWindow(m_api, this);
+    m_pages->addWidget(auctionWindow);
 
-        // --- ТВОЯ МИНИ-ЗАДАЧА (Цвет текста) ---
-        // Делаем текст светлым, чтобы его было видно на тёмном фоне
-        label->setStyleSheet("color: #cccccc; background-color: transparent;");
-        // --------------------------------------
-
-        layout->addWidget(label);
-        m_pages->addWidget(page);
-    }
+    // --- 5. Игроки (заглушка) ---
+    auto* playersPage = new QWidget(this);
+    playersPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
+    auto* playersLayout = new QVBoxLayout(playersPage);
+    auto* playersLabel = new QLabel("<h1>Игроки (в разработке)</h1>", playersPage);
+    playersLabel->setAlignment(Qt::AlignCenter);
+    playersLayout->addWidget(playersLabel);
+    m_pages->addWidget(playersPage);
 }
