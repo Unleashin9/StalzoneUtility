@@ -1,0 +1,64 @@
+﻿QWidget {
+    background-color: transparent;
+    color: #FFFFFF;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+}
+
+QLabel {
+    background-color: transparent;
+}
+
+QMainWindow, QDialog {
+    background-color: transparent;
+}
+
+#mainContainer {
+    background-color: #1E1E1E;
+}
+
+#appTitle {
+    font-size: 28px;
+    font-weight: bold;
+    color: #A3E635;
+}
+
+#appSubtitle {
+    font-size: 14px;
+    color: #9CA3AF;
+}
+
+QPushButton {
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 10px 20px;
+}
+
+#btnLogin {
+    background-color: #A3E635;
+    color: #1E1E1E;
+    padding-left: 15px;
+    padding-right: 20px;
+}
+#btnLogin:hover   { background-color: #BEF264; }
+#btnLogin:pressed { background-color: #84CC16; }
+
+QToolButton#btnExit, QToolButton#btnDiscord {
+    border: none;
+    border-radius: 8px;
+    padding: 0px;
+}
+
+QToolButton#btnExit {
+    background-color: #F87171;
+}
+QToolButton#btnExit:hover   { background-color: #FCA5A5; }
+QToolButton#btnExit:pressed { background-color: #EF4444; }
+
+QToolButton#btnDiscord {
+    background-color: #5865F2;
+}
+QToolButton#btnDiscord:hover   { background-color: #7983F5; }
+QToolButton#btnDiscord:pressed { background-color: #4752C4; }

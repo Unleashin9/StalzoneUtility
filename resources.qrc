@@ -1,0 +1,9 @@
+﻿<RCC>
+    <qresource prefix="/">
+        <file>resources/dark_theme.qss</file>
+        <file>resources/light_theme.qss</file>
+        <file>resources/icons/MainWindow/profileBtnOff.svg</file>
+        <file>resources/icons/MainWindow/exitBtn.svg</file>
+        <file>resources/icons/MainWindow/discordBtn.svg</file>
+    </qresource>
+</RCC>
