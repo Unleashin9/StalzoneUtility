@@ -1,0 +1,26 @@
+# —борочные папки CMake Ч их можно пересобрать, в репозиторий не идут.
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+
+# Qt Creator держит тут личные настройки проекта (раскладка окон и т.п.).
+*.user
+*.user.*
+
+# »сполн€емые и объектные файлы.
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# OS-специфичный мусор.
+.DS_Store
+Thumbs.db
+
+# Visual Studio 2022 cache directory
+.vs/
