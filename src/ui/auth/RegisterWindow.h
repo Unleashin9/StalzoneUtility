@@ -2,7 +2,13 @@
 #include <QDialog>
 
 class QLineEdit;
+class QPushButton;
+class QAction;
 class QWidget;
+class QVBoxLayout;
+class QShowEvent;
+class QHideEvent;
+class RequirementsPanel;
 
 class RegisterWindow : public QDialog
 {
@@ -18,14 +24,24 @@ signals:
 
 protected:
     void closeEvent(QCloseEvent* event) override;
+    void showEvent(QShowEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
 
 private slots:
     void onRegisterClicked();
+    void validateUsername(const QString& text);
+    void validatePassword(const QString& text);
 
 private:
     void setupUi();
+    void addDivider(QVBoxLayout* layout, QWidget* parent);
 
-    QLineEdit* m_usernameEdit;
-    QLineEdit* m_passwordEdit;
-    QLineEdit* m_confirmEdit;
+    QLineEdit* m_usernameEdit = nullptr;
+    QLineEdit* m_passwordEdit = nullptr;
+    QLineEdit* m_confirmEdit = nullptr;
+    QLineEdit* m_referralEdit = nullptr;
+
+    QAction* m_togglePassAction = nullptr;
+    QAction* m_toggleConfirmAction = nullptr;
+    RequirementsPanel* m_reqPanel = nullptr;
 };

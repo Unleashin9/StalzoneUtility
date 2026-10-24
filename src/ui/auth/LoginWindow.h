@@ -7,7 +7,6 @@ class QAction;
 class QVBoxLayout;
 class QWidget;
 class QPushButton;
-class QResizeEvent;
 
 class LoginWindow : public QDialog
 {
@@ -22,7 +21,6 @@ signals:
 
 protected:
     void closeEvent(QCloseEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override; // <--- ОБЪЯВЛЕНО
 
 private slots:
     void onLoginClicked();
@@ -32,9 +30,8 @@ private:
     void setupUi();
     void addDivider(QVBoxLayout* layout, QWidget* parent);
 
-    QLineEdit* m_usernameEdit;
-    QLineEdit* m_passwordEdit;
-    QCheckBox* m_rememberCheck;
-    QAction* m_togglePasswordAction;
-    QPushButton* m_closeBtn; // <--- ОБЪЯВЛЕНО
+    QLineEdit* m_usernameEdit = nullptr;
+    QLineEdit* m_passwordEdit = nullptr;
+    QCheckBox* m_rememberCheck = nullptr;
+    QAction* m_togglePasswordAction = nullptr;
 };

@@ -370,3 +370,29 @@ QScrollBar::handle:vertical:hover {
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0;
 }
+
+/* Блок требований в RegisterWindow */
+#requirementsBox {
+    background-color: #1A1A1A;
+    border: 1px solid #2D2D2D;
+    border-radius: 8px;
+}
+
+#rulesTitle {
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* Панель требований (RegisterWindow) */
+#requirementsContainer {
+    background-color: #1A1A1A;
+    border: 1px solid #4B5563;
+    border-radius: 12px;
+}
+
+#rulesTitle {
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: bold;
+}

@@ -4,11 +4,9 @@
 #include <memory>
 #include <QString>
 
-// Предварительные объявления классов Qt
 class QPushButton;
 class QGraphicsBlurEffect;
 
-// Предварительные объявления наших классов
 class StalzoneAPI;
 class GameDatabase;
 class AuctionWindow;
@@ -43,7 +41,9 @@ private:
     void updateProfileButton();
     void applyBlurEffect();
     void removeBlurEffect();
-    void positionDialog(QWidget* dialog); // <--- ДОБАВИЛИ
+    void positionDialog(QWidget* dialog);
+    void blockMainWindow();      // <--- НОВОЕ
+    void unblockMainWindow();    // <--- НОВОЕ
 
     StalzoneAPI* m_api = nullptr;
     GameDatabase* m_db = nullptr;

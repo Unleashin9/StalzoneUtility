@@ -11,5 +11,11 @@
         <file>resources/icons/LoginWindow/passwordEditOpen.svg</file>
         <file>resources/icons/LoginWindow/passwordEditClose.svg</file>
         <file>resources/icons/LoginWindow/rememberMe.svg</file>
+
+        <file>resources/icons/RegisterWindow/registerBtn.svg</file>
+        <file>resources/icons/RegisterWindow/passwordEditOpen.svg</file>
+        <file>resources/icons/RegisterWindow/passwordEditClose.svg</file>
+        <file>resources/icons/RegisterWindow/yes.svg</file>
+        <file>resources/icons/RegisterWindow/no.svg</file>
     </qresource>
 </RCC>

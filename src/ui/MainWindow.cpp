@@ -31,21 +31,17 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle("STALZONE Utility");
     resize(1200, 750);
 
-    // Инициализация базы данных пользователей
     DBManager::instance().init();
 
-    // Инициализация API и базы предметов
     m_api = new StalzoneAPI(this);
     m_db = new GameDatabase(this);
     m_db->load();
 
-    // Создаем окна авторизации
     m_loginWindow = new LoginWindow(this);
     m_registerWindow = new RegisterWindow(this);
 
     setupUi();
 
-    // Связываем сигналы авторизации
     connect(m_loginWindow, &LoginWindow::loginSuccessful, this, &MainWindow::onLoginSuccess);
     connect(m_loginWindow, &LoginWindow::registerRequested, this, &MainWindow::onShowRegisterWindow);
     connect(m_loginWindow, &LoginWindow::windowClosed, this, &MainWindow::removeBlurEffect);
@@ -54,7 +50,6 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_registerWindow, &RegisterWindow::loginRequested, this, &MainWindow::onShowLoginWindow);
     connect(m_registerWindow, &RegisterWindow::windowClosed, this, &MainWindow::removeBlurEffect);
 
-    // Автоматический вход, если пользователь сохранил сессию
     QSettings settings;
     if (settings.value(AuthSettings::kRememberMe, false).toBool()) {
         QString savedUser = settings.value(AuthSettings::kUsername).toString();
@@ -176,7 +171,6 @@ void MainWindow::setupUi()
     btnDiscord->setCursor(Qt::PointingHandCursor);
     bottomLayout->addWidget(btnDiscord);
 
-    // СБОРКА
     mainLayout->addLayout(topLayout);
     mainLayout->addStretch();
     mainLayout->addLayout(centerLayout);
@@ -185,12 +179,31 @@ void MainWindow::setupUi()
 }
 
 // =========================================================
+// БЛОКИРОВКА / РАЗБЛОКИРОВКА MAINWINDOW
+// =========================================================
+
+void MainWindow::blockMainWindow()
+{
+    // Отключаем всю центральную часть — клики не доходят до кнопок,
+    // подсветка при наведении тоже не работает
+    if (centralWidget()) {
+        centralWidget()->setEnabled(false);
+    }
+}
+
+void MainWindow::unblockMainWindow()
+{
+    if (centralWidget()) {
+        centralWidget()->setEnabled(true);
+    }
+}
+
+// =========================================================
 // ЛОГИКА АВТОРИЗАЦИИ
 // =========================================================
 
 void MainWindow::positionDialog(QWidget* dialog)
 {
-    // Позиционируем окно справа по центру экрана
     int margin = 50;
     int x = this->x() + this->width() - dialog->width() - margin;
     int y = this->y() + (this->height() - dialog->height()) / 2;
@@ -200,16 +213,15 @@ void MainWindow::positionDialog(QWidget* dialog)
 void MainWindow::onProfileButtonClicked()
 {
     if (m_currentUser.isEmpty()) {
-        // Не вошли — показываем окно входа
         m_registerWindow->hide();
         applyBlurEffect();
+        blockMainWindow();               // <--- БЛОКИРУЕМ
         positionDialog(m_loginWindow);
         m_loginWindow->show();
         m_loginWindow->raise();
         m_loginWindow->activateWindow();
     }
     else {
-        // Уже вошли — меню выхода
         QMenu menu(this);
         QAction* logoutAction = menu.addAction("Выйти");
         if (menu.exec(m_profileBtn->mapToGlobal(QPoint(0, m_profileBtn->height()))) == logoutAction) {
@@ -224,12 +236,14 @@ void MainWindow::onLoginSuccess(const QString& username)
     updateProfileButton();
     m_loginWindow->hide();
     removeBlurEffect();
+    unblockMainWindow();                 // <--- РАЗБЛОКИРУЕМ
 }
 
 void MainWindow::onShowRegisterWindow()
 {
     m_loginWindow->hide();
     m_registerWindow->clearFields();
+    // Главное окно уже заблокировано, не трогаем
     positionDialog(m_registerWindow);
     m_registerWindow->show();
     m_registerWindow->raise();
@@ -239,6 +253,7 @@ void MainWindow::onShowRegisterWindow()
 void MainWindow::onShowLoginWindow()
 {
     m_registerWindow->hide();
+    // Главное окно всё ещё заблокировано
     positionDialog(m_loginWindow);
     m_loginWindow->show();
     m_loginWindow->raise();
@@ -276,6 +291,7 @@ void MainWindow::applyBlurEffect()
 void MainWindow::removeBlurEffect()
 {
     centralWidget()->setGraphicsEffect(nullptr);
+    unblockMainWindow();                 // <--- РАЗБЛОКИРУЕМ при закрытии диалога
 }
 
 // =========================================================
