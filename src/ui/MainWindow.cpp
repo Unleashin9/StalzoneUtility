@@ -8,6 +8,13 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+// Добавляем QDebug для вывода в консоль (для теста API)
+#include <QDebug>
+
+#include <QJsonArray>
+// Подключаем наш класс для работы с API
+#include "api/StalzoneAPI.h"
+
 // Конструктор. Порядок инициализации: сначала база (QMainWindow),
 // потом члены класса (у нас = nullptr по умолчанию, ничего писать не надо).
 MainWindow::MainWindow(QWidget* parent)
@@ -25,9 +32,32 @@ MainWindow::MainWindow(QWidget* parent)
     // когда пользователь меняет выделенный пункт.
     // Мы соединяем его со слотом QStackedWidget::setCurrentIndex,
     // который просто переключает видимую страницу на ту же позицию.
-    // Это классический пример сигнал-слот в Qt — вся мощь фреймворка здесь.
     connect(m_sidebar, &QListWidget::currentRowChanged,
         m_pages, &QStackedWidget::setCurrentIndex);
+
+    // =========================================================
+    // ВРЕМЕННЫЙ ТЕСТ API (потом удалим, когда перейдем к UI аукциона)
+    // =========================================================
+    auto* api = new StalzoneAPI(this);
+
+    // Слушаем сигнал об успешном получении лотов
+    connect(api, &StalzoneAPI::lotsReceived, this, [](const QJsonArray& lots) {
+        qDebug() << "=== УСПЕХ! ===";
+        qDebug() << "Получено лотов:" << lots.size();
+        if (!lots.isEmpty()) {
+            qDebug() << "Первый лот:" << lots.first().toObject();
+        }
+        });
+
+    // Слушаем сигнал об ошибке
+    connect(api, &StalzoneAPI::errorOccurred, this, [](const QString& err) {
+        qDebug() << "=== ОШИБКА API ===";
+        qDebug() << err;
+        });
+
+    // Делаем тестовый запрос: регион "ru", предмет "zyv9"
+    api->fetchAuctionLots("ru", "zyv9");
+    // =========================================================
 }
 
 void MainWindow::setupUi()
@@ -80,7 +110,6 @@ void MainWindow::createSidebar()
     );
 
     // Пункты меню — по одному на будущий раздел.
-    // Пока это только ярлыки, но через 2 недели часть из них откроет настоящий функционал.
     const QStringList sections = {
         "🏠  Главная",
         "🧮  Калькуляторы",
@@ -114,7 +143,12 @@ void MainWindow::createPages()
     for (const QString& title : sections) {
         // Создаём простой виджет-страницу.
         auto* page = new QWidget(this);
-        page->setStyleSheet("background-color: #1e1e1e;"); // Темный фон, как у сайдбара
+
+        // --- ТВОЯ МИНИ-ЗАДАЧА (Тёмная тема) ---
+        // Задаем странице тёмный фон, чтобы он совпадал с сайдбаром
+        page->setStyleSheet("background-color: #1e1e1e;");
+        // --------------------------------------
+
         auto* layout = new QVBoxLayout(page);
 
         auto* label = new QLabel(
@@ -123,7 +157,11 @@ void MainWindow::createPages()
         );
         label->setAlignment(Qt::AlignCenter);
 
-        label->setStyleSheet("color: #cccccc; background-color: transparent;"); // Светлый текст
+        // --- ТВОЯ МИНИ-ЗАДАЧА (Цвет текста) ---
+        // Делаем текст светлым, чтобы его было видно на тёмном фоне
+        label->setStyleSheet("color: #cccccc; background-color: transparent;");
+        // --------------------------------------
+
         layout->addWidget(label);
         m_pages->addWidget(page);
     }

@@ -24,3 +24,6 @@ Thumbs.db
 
 # Visual Studio 2022 cache directory
 .vs/
+
+# token для API
+token.txt
