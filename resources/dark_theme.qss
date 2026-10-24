@@ -1,5 +1,48 @@
-﻿QWidget {
-    background-color: transparent;
+﻿/* ========================================================= */
+/* === СТРУКТУРА ФАЙЛА ===                                   */
+/*   1. Палитра (справочник)                                 */
+/*   2. Глобальные настройки                                 */
+/*   3. MainWindow (Дашборд)                                 */
+/*   4. Диалоги авторизации (Login / Register)               */
+/*   5. Общие элементы (Таблицы, Поля ввода, Кнопка "Назад") */
+/* ========================================================= */
+
+/* ========================================================= */
+/* === 1. ПАЛИТРА (справочник) ===                           */
+/*                                                           */
+/*   ФОН И ПОВЕРХНОСТИ                                       */
+/*     #1E1E1E ........ фон окна / основной                  */
+/*     #252525 ........ alternate-row (чётные строки таблицы)*/
+/*     #2D2D2D ........ поля ввода, меню, карточки           */
+/*     #333333 ........ hover карточек                       */
+/*                                                           */
+/*   ТЕКСТ И РАМКИ                                           */
+/*     #FFFFFF ........ основной текст                       */
+/*     #9CA3AF ........ приглушённый (подписи, hint)         */
+/*     #4B5563 ........ рамки, разделители                   */
+/*                                                           */
+/*   АКЦЕНТ (лайм)                                           */
+/*     #A3E635 ........ основной акцент                      */
+/*     #BEF264 ........ hover                                */
+/*     #84CC16 ........ pressed                              */
+/*                                                           */
+/*   ОПАСНОСТЬ (красный)                                     */
+/*     #F87171 ........ основной                             */
+/*     #FCA5A5 ........ hover                                */
+/*     #EF4444 ........ pressed                              */
+/*                                                           */
+/*   БРЕНДЫ                                                  */
+/*     #5865F2 ........ Discord                              */
+/*     #7983F5 ........ Discord hover                        */
+/*     #4752C4 ........ Discord pressed                      */
+/* ========================================================= */
+
+/* ========================================================= */
+/* === 2. ГЛОБАЛЬНЫЕ НАСТРОЙКИ ===                           */
+/* ========================================================= */
+
+QWidget {
+    background-color: #1E1E1E;
     color: #FFFFFF;
     font-family: "Segoe UI", Arial, sans-serif;
     font-size: 14px;
@@ -9,48 +52,69 @@ QLabel {
     background-color: transparent;
 }
 
+/* Top-level окна прозрачные, чтобы работали скругления у диалогов */
 QMainWindow, QDialog {
     background-color: transparent;
 }
 
-#mainContainer {
-    background-color: #1E1E1E;
-}
-
-#appTitle {
-    font-size: 28px;
+/* Базовая кнопка-«акцент» (fallback) */
+QPushButton {
+    background-color: #A3E635;
+    color: #000000;
+    border: none;
+    border-radius: 8px;
+    padding: 0px 16px;
     font-weight: bold;
-    color: #A3E635;
 }
-
-#appSubtitle {
-    font-size: 14px;
+QPushButton:hover    { background-color: #BEF264; }
+QPushButton:pressed  { background-color: #84CC16; }
+QPushButton:disabled {
+    background-color: #4B5563;
     color: #9CA3AF;
 }
 
-QPushButton {
+/* ========================================================= */
+/* === 3. MAINWINDOW (ДАШБОРД) ===                          */
+/* ========================================================= */
+
+/* Корневой контейнер */
+#mainContainer {
+    background-color: #1E1E1E;
     border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 14px;
-    padding: 10px 20px;
+    border-radius: 0px;
 }
 
+/* Заголовок и подзаголовок */
+#appTitle {
+    font-size: 32pt;
+    font-weight: bold;
+    color: #A3E635;
+}
+#appSubtitle {
+    font-size: 18pt;
+    color: #FFFFFF;
+}
+
+/* Кнопка входа/профиля */
 #btnLogin {
     background-color: #A3E635;
-    color: #1E1E1E;
+    color: #000000;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: left;
     padding-left: 15px;
-    padding-right: 20px;
 }
 #btnLogin:hover   { background-color: #BEF264; }
 #btnLogin:pressed { background-color: #84CC16; }
 
+/* Кнопки-иконки */
 QToolButton#btnExit, QToolButton#btnDiscord {
     border: none;
     border-radius: 8px;
     padding: 0px;
 }
-
 QToolButton#btnExit {
     background-color: #F87171;
 }
@@ -62,3 +126,242 @@ QToolButton#btnDiscord {
 }
 QToolButton#btnDiscord:hover   { background-color: #7983F5; }
 QToolButton#btnDiscord:pressed { background-color: #4752C4; }
+
+/* Карточки на главном экране */
+QPushButton#btnAuctionCard, 
+QPushButton#btnBarterCard, 
+QPushButton#btnItemsCard {
+    background-color: #2D2D2D;
+    color: #FFFFFF;
+    border: 2px solid #4B5563;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px;
+}
+QPushButton#btnAuctionCard:hover, 
+QPushButton#btnBarterCard:hover, 
+QPushButton#btnItemsCard:hover {
+    border: 2px solid #A3E635;
+    background-color: #333333;
+}
+
+/* ========================================================= */
+/* === 4. ДИАЛОГИ АВТОРИЗАЦИИ (LOGIN / REGISTER) ===        */
+/* ========================================================= */
+
+/* Карточка диалога */
+#dialogContainer {
+    background-color: #1E1E1E;
+    border-radius: 15px;
+    border: 1px solid #4B5563;
+}
+
+/* Заголовки */
+#dialogContainer #loginTitle {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+#dialogContainer #loginSubtitle {
+    font-size: 14px;
+    color: #9CA3AF;
+}
+
+/* Подписи над полями */
+#dialogContainer #inputLabel {
+    font-size: 12px;
+    font-weight: bold;
+    color: #9CA3AF;
+}
+
+/* Разделитель */
+#dialogContainer #dividerLine {
+    color: #4B5563;
+    background-color: #4B5563;
+    max-height: 1px;
+    border: none;
+}
+
+/* Кнопка-ссылка */
+#dialogContainer #linkButton {
+    background-color: transparent;
+    color: #A3E635;
+    font-size: 12px;
+    font-weight: normal;
+    border: none;
+    padding: 0px;
+}
+#dialogContainer #linkButton:hover {
+    text-decoration: underline;
+    color: #BEF264;
+}
+
+/* Главная кнопка формы */
+#dialogContainer #loginSubmitBtn {
+    background-color: #A3E635;
+    color: #000000;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 8px;
+}
+#dialogContainer #loginSubmitBtn:hover   { background-color: #BEF264; }
+#dialogContainer #loginSubmitBtn:pressed { background-color: #84CC16; }
+
+/* Контурная кнопка */
+#dialogContainer #outlineButton {
+    background-color: transparent;
+    border: 1px solid #A3E635;
+    color: #A3E635;
+    border-radius: 6px;
+    padding: 5px 15px;
+    font-weight: bold;
+    font-size: 12px;
+}
+#dialogContainer #outlineButton:hover   { background-color: rgba(163, 230, 53, 0.1); }
+#dialogContainer #outlineButton:pressed { background-color: rgba(163, 230, 53, 0.2); }
+
+/* Крестик закрытия */
+#dialogContainer #closeDialogBtn {
+    background-color: transparent;
+    color: #EF4444;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+}
+#dialogContainer #closeDialogBtn:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #F87171;
+}
+
+/* Поля ввода в диалогах */
+#dialogContainer QLineEdit {
+    background-color: #2D2D2D;
+    color: #FFFFFF;
+    border: 1px solid #4B5563;
+    border-radius: 6px;
+    padding: 8px;
+}
+#dialogContainer QLineEdit:focus {
+    border: 1px solid #A3E635;
+}
+
+/* Иконка «глазик» внутри поля пароля */
+#dialogContainer QLineEdit QToolButton {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px 5px 0px 0px;
+}
+#dialogContainer QLineEdit QToolButton:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Чекбокс «Запомнить меня» */
+#dialogContainer QCheckBox {
+    color: #FFFFFF;
+    font-size: 13px;
+    spacing: 8px;
+}
+#dialogContainer QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #4B5563;
+    border-radius: 4px;
+    background-color: transparent;
+}
+#dialogContainer QCheckBox::indicator:hover {
+    border: 1px solid #A3E635;
+}
+#dialogContainer QCheckBox::indicator:checked {
+    background-color: transparent;
+    border: 1px solid #4B5563;
+    image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A3E635' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'></polyline></svg>");
+}
+
+/* ========================================================= */
+/* === 5. ОБЩИЕ ЭЛЕМЕНТЫ ===                                */
+/* ========================================================= */
+
+/* Фон для под-окон (Аукцион, Калькулятор, База), чтобы не были прозрачными */
+#auctionRoot, #barterRoot, #itemsRoot {
+    background-color: #1E1E1E;
+}
+
+/* Кнопка "На главную" */
+QPushButton#btnBack {
+    background-color: transparent;
+    color: #9CA3AF;
+    border: none;
+    font-size: 16px;
+    font-weight: normal;
+    text-align: left;
+    padding: 5px;
+}
+QPushButton#btnBack:hover {
+    color: #A3E635;
+}
+
+/* Таблицы */
+QTableWidget {
+    background-color: #1E1E1E;
+    alternate-background-color: #252525;
+    gridline-color: transparent;
+    border: none;
+    border-radius: 0;
+    selection-background-color: rgba(163, 230, 53, 0.25);
+    selection-color: #FFFFFF;
+    outline: none;
+}
+QTableWidget::item {
+    padding: 6px 10px;
+    border: none;
+}
+
+/* Заголовки колонок */
+QHeaderView::section {
+    background-color: #2D2D2D;
+    color: #9CA3AF;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 8px 10px;
+    border: none;
+    border-bottom: 1px solid #4B5563;
+}
+
+/* Выпадающие списки и поля ввода вне диалогов */
+QComboBox, QLineEdit {
+    background-color: #2D2D2D;
+    color: #FFFFFF;
+    border: 1px solid #4B5563;
+    border-radius: 6px;
+    padding: 8px 12px;
+    min-width: 150px;
+}
+QComboBox:focus, QLineEdit:focus {
+    border: 1px solid #A3E635;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 24px;
+}
+
+/* Скроллбары */
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: #4B5563;
+    border-radius: 5px;
+    min-height: 24px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #A3E635;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0;
+}

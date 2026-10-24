@@ -6,13 +6,15 @@
 #include <QTableWidget>
 #include <QLineEdit>
 #include <QLabel>
+#include <QPushButton>
 #include <QHeaderView>
 #include <QMap>
-#include <QDebug>
 
 ItemsWindow::ItemsWindow(GameDatabase* db, QWidget* parent)
     : QWidget(parent), m_db(db)
 {
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
+    setObjectName("itemsRoot");
     setupUi();
 
     if (m_db->isLoaded()) {
@@ -25,22 +27,28 @@ ItemsWindow::ItemsWindow(GameDatabase* db, QWidget* parent)
 
 void ItemsWindow::setupUi()
 {
-    setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
-
     auto* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(30, 30, 30, 30);
     mainLayout->setAlignment(Qt::AlignTop);
+
+    // --- Кнопка Назад ---
+    auto* topBarLayout = new QHBoxLayout();
+    auto* btnBack = new QPushButton("← На главную", this);
+    btnBack->setObjectName("btnBack");
+    btnBack->setCursor(Qt::PointingHandCursor);
+    connect(btnBack, &QPushButton::clicked, this, &ItemsWindow::backRequested);
+    topBarLayout->addWidget(btnBack);
+    topBarLayout->addStretch();
+    mainLayout->addLayout(topBarLayout);
 
     auto* title = new QLabel("<h2>База предметов</h2>", this);
     mainLayout->addWidget(title);
 
     auto* searchLayout = new QHBoxLayout();
     searchLayout->addWidget(new QLabel("Поиск:", this));
-
     m_searchEdit = new QLineEdit(this);
-    m_searchEdit->setPlaceholderText("Введите название или ID предмета...");
-    m_searchEdit->setStyleSheet("background: #2d2d2d; border: 1px solid #444; padding: 6px; color: white; border-radius: 3px;");
+    m_searchEdit->setPlaceholderText("Введите название или ID...");
     connect(m_searchEdit, &QLineEdit::textChanged, this, &ItemsWindow::filterItems);
-
     searchLayout->addWidget(m_searchEdit);
     mainLayout->addLayout(searchLayout);
 
@@ -51,12 +59,7 @@ void ItemsWindow::setupUi()
     m_table->setColumnWidth(0, 150);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_table->setStyleSheet(
-        "QTableWidget { background-color: #252525; gridline-color: #444; color: #ccc; margin-top: 10px; }"
-        "QHeaderView::section { background-color: #1e1e1e; padding: 4px; border: 1px solid #444; color: #fff; }"
-        "QTableWidget::item:selected { background-color: #2d5a27; }"
-    );
-
+    m_table->setAlternatingRowColors(true);
     mainLayout->addWidget(m_table);
 }
 
@@ -68,44 +71,27 @@ void ItemsWindow::onDatabaseLoaded()
 void ItemsWindow::populateTable()
 {
     QMap<QString, QString> items = m_db->allItems();
-
     m_table->setRowCount(items.size());
-
     int row = 0;
     for (auto it = items.begin(); it != items.end(); ++it) {
-        QString id = it.key();
-        QString name = it.value();
-
-        m_table->setItem(row, 0, new QTableWidgetItem(id));
-        m_table->setItem(row, 1, new QTableWidgetItem(name));
-
+        m_table->setItem(row, 0, new QTableWidgetItem(it.key()));
+        m_table->setItem(row, 1, new QTableWidgetItem(it.value()));
         row++;
     }
-
-    qDebug() << "ItemsWindow: populated" << items.size() << "items.";
 }
 
 void ItemsWindow::filterItems(const QString& text)
 {
     if (text.isEmpty()) {
-        for (int i = 0; i < m_table->rowCount(); ++i) {
-            m_table->setRowHidden(i, false);
-        }
+        for (int i = 0; i < m_table->rowCount(); ++i) m_table->setRowHidden(i, false);
         return;
     }
-
     for (int i = 0; i < m_table->rowCount(); ++i) {
         QTableWidgetItem* idItem = m_table->item(i, 0);
         QTableWidgetItem* nameItem = m_table->item(i, 1);
-
         if (!idItem || !nameItem) continue;
-
-        QString id = idItem->text();
-        QString name = nameItem->text();
-
-        bool matches = id.contains(text, Qt::CaseInsensitive) ||
-            name.contains(text, Qt::CaseInsensitive);
-
+        bool matches = idItem->text().contains(text, Qt::CaseInsensitive) ||
+            nameItem->text().contains(text, Qt::CaseInsensitive);
         m_table->setRowHidden(i, !matches);
     }
 }

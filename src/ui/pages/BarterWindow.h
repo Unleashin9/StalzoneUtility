@@ -12,9 +12,12 @@ class BarterWindow : public QWidget
 public:
     explicit BarterWindow(GameDatabase* db, QWidget* parent = nullptr);
 
+signals:
+    void backRequested(); // <--- СИГНАЛ ДЛЯ ВОЗВРАТА
+
 private slots:
-    void onRecipeSelected(int index); // Вызывается при смене предмета в списке
-    void onDatabaseLoaded();          // Вызывается, когда база загрузилась
+    void onRecipeSelected(int index);
+    void onDatabaseLoaded();
 
 private:
     void setupUi();

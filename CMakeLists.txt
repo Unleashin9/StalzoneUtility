@@ -29,7 +29,17 @@ add_executable(StalzoneUtility
     src/ui/pages/ItemsWindow.cpp
     src/ui/pages/ItemsWindow.h
     resources.qrc
+    src/core/AuthSettings.h 
+    src/core/DBManager.h
+    src/core/DBManager.cpp
+    src/ui/auth/LoginWindow.h 
+    src/ui/auth/LoginWindow.cpp
+    src/ui/auth/RegisterWindow.h
+    src/ui/auth/RegisterWindow.cpp
 )
+
+# Убираем консольное окно при запуске в Windows
+set_target_properties(StalzoneUtility PROPERTIES WIN32_EXECUTABLE TRUE)
 
 target_include_directories(StalzoneUtility PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 

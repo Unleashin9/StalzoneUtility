@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 #include <QWidget>
 
 class QTableWidget;
@@ -9,9 +8,11 @@ class GameDatabase;
 class ItemsWindow : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit ItemsWindow(GameDatabase* db, QWidget* parent = nullptr);
+
+signals:
+    void backRequested(); // <--- СИГНАЛ ДЛЯ ВОЗВРАТА
 
 private slots:
     void onDatabaseLoaded();

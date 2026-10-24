@@ -15,6 +15,8 @@
 AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent)
     : QWidget(parent), m_api(api), m_db(db)
 {
+    setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
+    setObjectName("auctionRoot");
     setupUi();
     connect(m_api, &StalzoneAPI::lotsReceived, this, &AuctionWindow::onLotsReceived);
     connect(m_api, &StalzoneAPI::errorOccurred, this, &AuctionWindow::onApiError);
@@ -22,17 +24,27 @@ AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent
 
 void AuctionWindow::setupUi()
 {
-    setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
     auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(30, 30, 30, 30);
+
+    // --- Кнопка Назад ---
+    auto* topBarLayout = new QHBoxLayout();
+    auto* btnBack = new QPushButton("← На главную", this);
+    btnBack->setObjectName("btnBack");
+    btnBack->setCursor(Qt::PointingHandCursor);
+    connect(btnBack, &QPushButton::clicked, this, &AuctionWindow::backRequested);
+    topBarLayout->addWidget(btnBack);
+    topBarLayout->addStretch();
+    layout->addLayout(topBarLayout);
+
+    auto* title = new QLabel("<h2>Аукцион</h2>", this);
+    layout->addWidget(title);
 
     auto* controlsLayout = new QHBoxLayout();
-
     m_itemSelector = new QComboBox(this);
     m_itemSelector->addItem("Предмет: zyv9 (тестовый)", "zyv9");
-    m_itemSelector->setStyleSheet("padding: 5px; background: #2d2d2d; border: 1px solid #444; color: #fff;");
 
     m_refreshBtn = new QPushButton("Обновить", this);
-    m_refreshBtn->setStyleSheet("padding: 5px 15px; background: #2d5a27; color: white; border: none; border-radius: 3px;");
     connect(m_refreshBtn, &QPushButton::clicked, this, &AuctionWindow::onRefreshClicked);
 
     controlsLayout->addWidget(m_itemSelector);
@@ -45,11 +57,7 @@ void AuctionWindow::setupUi()
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_table->setStyleSheet(
-        "QTableWidget { background-color: #252525; gridline-color: #444; color: #ccc; }"
-        "QHeaderView::section { background-color: #1e1e1e; padding: 4px; border: 1px solid #444; color: #fff; }"
-        "QTableWidget::item:selected { background-color: #2d5a27; }"
-    );
+    m_table->setAlternatingRowColors(true);
 
     layout->addLayout(controlsLayout);
     layout->addWidget(m_table);
@@ -80,20 +88,17 @@ void AuctionWindow::onApiError(const QString& error)
 void AuctionWindow::populateTable(const QJsonArray& lots)
 {
     m_table->setRowCount(lots.size());
-
     for (int i = 0; i < lots.size(); ++i) {
         QJsonObject lot = lots[i].toObject();
-
         QString itemId = lot["itemId"].toString();
-        QString itemName = m_db->itemName(itemId); // <--- ПОЛУЧАЕМ НАЗВАНИЕ
+        QString itemName = m_db->itemName(itemId);
         int amount = lot["amount"].toInt();
         int price = lot["buyoutPrice"].toInt();
         QString endTime = lot["endTime"].toString();
 
-        m_table->setItem(i, 0, new QTableWidgetItem(itemName)); // <--- ПИШЕМ НАЗВАНИЕ
+        m_table->setItem(i, 0, new QTableWidgetItem(itemName));
         m_table->setItem(i, 1, new QTableWidgetItem(QString::number(amount)));
         m_table->setItem(i, 2, new QTableWidgetItem(QString::number(price) + " руб."));
-
         QString formattedTime = endTime.replace("T", " ").remove("Z");
         m_table->setItem(i, 3, new QTableWidgetItem(formattedTime));
     }
