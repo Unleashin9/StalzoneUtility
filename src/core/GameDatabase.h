@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QMap>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QString>
@@ -15,28 +16,30 @@ class GameDatabase : public QObject
 public:
     explicit GameDatabase(QObject* parent = nullptr);
 
-    // Запускает загрузку данных с GitHub
     void load();
 
-    // Получить русское название предмета по ID (например, "zyv9" -> "Вспышка")
+    // Получить русское название предмета по ID
     QString itemName(const QString& id) const;
 
     // Получить все рецепты бартера
     QJsonArray barterRecipes() const;
 
+    // НОВОЕ: Получить список всех предметов (ID -> Название)
+    QMap<QString, QString> allItems() const;
+
     bool isLoaded() const { return m_loaded; }
 
 signals:
-    void loaded();                          // Данные успешно загружены
-    void errorOccurred(const QString& msg); // Ошибка при загрузке
+    void loaded();
+    void errorOccurred(const QString& msg);
 
 private:
     void parseListing(const QJsonArray& array);
     void parseBarterRecipes(const QJsonArray& array);
 
     QNetworkAccessManager* m_networkManager;
-    QHash<QString, QString> m_itemNames; // Словарь: ID -> Название
+    QHash<QString, QString> m_itemNames;
     QJsonArray m_barterRecipes;
     bool m_loaded = false;
-    int m_pendingRequests = 0; // Счетчик, чтобы понять, когда загрузились ОБА файла
+    int m_pendingRequests = 0;
 };

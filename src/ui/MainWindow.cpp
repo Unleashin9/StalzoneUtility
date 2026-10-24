@@ -7,9 +7,10 @@
 #include <QWidget>
 
 #include "api/StalzoneAPI.h"
-#include "core/GameDatabase.h" // <--- ДОБАВИЛИ
+#include "core/GameDatabase.h"
 #include "ui/pages/AuctionWindow.h"
 #include "ui/pages/BarterWindow.h"
+#include "ui/pages/ItemsWindow.h" // <--- НОВОЕ
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -19,7 +20,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_api = new StalzoneAPI(this);
 
-    // Инициализируем базу данных и запускаем загрузку
     m_db = new GameDatabase(this);
     m_db->load();
 
@@ -75,17 +75,11 @@ void MainWindow::createPages()
     homeLayout->addWidget(homeLabel);
     m_pages->addWidget(homePage);
 
-    // 1. Калькуляторы (BarterWindow) - передаем m_db
+    // 1. Калькуляторы
     m_pages->addWidget(new BarterWindow(m_db, this));
 
-    // 2. База предметов (заглушка)
-    auto* dbPage = new QWidget(this);
-    dbPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
-    auto* dbLayout = new QVBoxLayout(dbPage);
-    auto* dbLabel = new QLabel("<h1>База предметов (в разработке)</h1>", dbPage);
-    dbLabel->setAlignment(Qt::AlignCenter);
-    dbLayout->addWidget(dbLabel);
-    m_pages->addWidget(dbPage);
+    // 2. База предметов (ItemsWindow)
+    m_pages->addWidget(new ItemsWindow(m_db, this)); // <--- НОВОЕ
 
     // 3. Убежище (заглушка)
     auto* hideoutPage = new QWidget(this);
@@ -96,7 +90,7 @@ void MainWindow::createPages()
     hideoutLayout->addWidget(hideoutLabel);
     m_pages->addWidget(hideoutPage);
 
-    // 4. Аукцион (AuctionWindow) - передаем m_api и m_db
+    // 4. Аукцион
     m_pages->addWidget(new AuctionWindow(m_api, m_db, this));
 
     // 5. Игроки (заглушка)

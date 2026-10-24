@@ -21,13 +21,11 @@ void GameDatabase::load()
         return;
     }
 
-    // Ссылки на официальный репозиторий игры (ветка main, папка ru)
     const QUrl listingUrl("https://raw.githubusercontent.com/EXBO-Studio/stalzone-database/main/ru/listing.json");
     const QUrl barterUrl("https://raw.githubusercontent.com/EXBO-Studio/stalzone-database/main/ru/barter_recipes.json");
 
     m_pendingRequests = 2;
 
-    // 1. Загружаем список всех предметов
     QNetworkReply* replyListing = m_networkManager->get(QNetworkRequest(listingUrl));
     connect(replyListing, &QNetworkReply::finished, this, [this, replyListing]() {
         if (replyListing->error() == QNetworkReply::NoError) {
@@ -43,7 +41,6 @@ void GameDatabase::load()
         if (--m_pendingRequests == 0) { m_loaded = true; emit loaded(); }
         });
 
-    // 2. Загружаем рецепты бартера
     QNetworkReply* replyBarter = m_networkManager->get(QNetworkRequest(barterUrl));
     connect(replyBarter, &QNetworkReply::finished, this, [this, replyBarter]() {
         if (replyBarter->error() == QNetworkReply::NoError) {
@@ -65,15 +62,13 @@ void GameDatabase::parseListing(const QJsonArray& array)
     m_itemNames.clear();
     for (const QJsonValue& val : array) {
         QJsonObject obj = val.toObject();
-        QString dataPath = obj["data"].toString(); // например, "/items/other/qyvk.json"
+        QString dataPath = obj["data"].toString();
 
-        // Извлекаем ID из пути (берем имя файла без расширения)
         QStringList parts = dataPath.split('/');
         if (parts.size() >= 2) {
-            QString fileName = parts.last(); // "qyvk.json"
-            QString id = fileName.split('.').first(); // "qyvk"
+            QString fileName = parts.last();
+            QString id = fileName.split('.').first();
 
-            // Достаем русское название
             QString nameRu = obj["name"].toObject()["lines"].toObject()["ru"].toString();
             if (!id.isEmpty() && !nameRu.isEmpty()) {
                 m_itemNames[id] = nameRu;
@@ -91,10 +86,20 @@ void GameDatabase::parseBarterRecipes(const QJsonArray& array)
 
 QString GameDatabase::itemName(const QString& id) const
 {
-    return m_itemNames.value(id, id); // Если не нашли, возвращаем сам ID
+    return m_itemNames.value(id, id);
 }
 
 QJsonArray GameDatabase::barterRecipes() const
 {
     return m_barterRecipes;
+}
+
+// НОВОЕ: Реализация метода получения всех предметов
+QMap<QString, QString> GameDatabase::allItems() const
+{
+    QMap<QString, QString> sortedMap;
+    for (auto it = m_itemNames.begin(); it != m_itemNames.end(); ++it) {
+        sortedMap.insert(it.key(), it.value());
+    }
+    return sortedMap;
 }
