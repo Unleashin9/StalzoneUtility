@@ -7,6 +7,7 @@ class QAction;
 class QVBoxLayout;
 class QWidget;
 class QPushButton;
+class QKeyEvent;
 
 class LoginWindow : public QDialog
 {
@@ -21,6 +22,7 @@ signals:
 
 protected:
     void closeEvent(QCloseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
     void onLoginClicked();

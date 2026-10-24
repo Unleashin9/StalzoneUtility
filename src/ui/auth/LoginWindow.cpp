@@ -16,16 +16,15 @@
 #include <QCloseEvent>
 #include <QGraphicsDropShadowEffect>
 #include <QTimer>
-#include <QShortcut>
+#include <QKeyEvent>
 
 LoginWindow::LoginWindow(QWidget* parent) : QDialog(parent)
 {
-    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    // Возвращаем Qt::Dialog — окно получает фокус, Esc работает
+    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setFixedWidth(420);
-
-    auto* escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-    connect(escShortcut, &QShortcut::activated, this, &LoginWindow::close);
+    setFocusPolicy(Qt::StrongFocus); // <--- явно разрешаем фокус
 
     setupUi();
     adjustSize();
@@ -157,6 +156,15 @@ void LoginWindow::addDivider(QVBoxLayout* layout, QWidget* parent)
     line->setFixedHeight(1);
     line->setStyleSheet("background-color: #333333; border: none;");
     layout->addWidget(line);
+}
+
+void LoginWindow::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Escape) {
+        close();
+        return;
+    }
+    QDialog::keyPressEvent(event);
 }
 
 void LoginWindow::togglePasswordVisibility()

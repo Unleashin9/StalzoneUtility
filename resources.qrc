@@ -4,6 +4,9 @@
         <file>resources/light_theme.qss</file>
 
         <file>resources/icons/MainWindow/profileBtnOff.svg</file>
+        <file>resources/icons/MainWindow/profileBtnOn.svg</file>
+        <file>resources/icons/MainWindow/settings.svg</file>
+        <file>resources/icons/MainWindow/logout.svg</file>
         <file>resources/icons/MainWindow/exitBtn.svg</file>
         <file>resources/icons/MainWindow/discordBtn.svg</file>
 

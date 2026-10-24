@@ -9,9 +9,14 @@
 #include <QApplication>
 #include <QIcon>
 #include <QGraphicsBlurEffect>
+#include <QGraphicsOpacityEffect>
+#include <QPropertyAnimation>
 #include <QSettings>
 #include <QMenu>
 #include <QAction>
+#include <QShortcut>
+#include <QMouseEvent>
+#include <QEvent>
 
 #include "api/StalzoneAPI.h"
 #include "core/GameDatabase.h"
@@ -23,6 +28,8 @@
 #include "ui/pages/ItemsWindow.h"
 #include "ui/auth/LoginWindow.h"
 #include "ui/auth/RegisterWindow.h"
+#include "ui/widgets/ProfileMenu.h"
+#include "ui/widgets/Toast.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -41,6 +48,33 @@ MainWindow::MainWindow(QWidget* parent)
     m_registerWindow = new RegisterWindow(this);
 
     setupUi();
+
+    // Создаём меню профиля после setupUi, чтобы m_profileBtn был готов
+    m_profileMenu = new ProfileMenu(this);
+
+    connect(m_profileMenu, &ProfileMenu::settingsUserClicked, this, [this]() {
+        hideProfileMenu();
+        Toast::showMessage(this, "Настройки пользователя (в разработке)", false);
+        });
+    connect(m_profileMenu, &ProfileMenu::settingsAppClicked, this, [this]() {
+        hideProfileMenu();
+        Toast::showMessage(this, "Настройки приложения (в разработке)", false);
+        });
+    connect(m_profileMenu, &ProfileMenu::logoutClicked, this, [this]() {
+        hideProfileMenu();
+        onLogout();
+        });
+
+    // Esc — скрыть меню, если открыто
+    auto* escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    connect(escShortcut, &QShortcut::activated, this, [this]() {
+        if (m_profileMenu && m_profileMenu->isVisible()) {
+            hideProfileMenu();
+        }
+        });
+
+    // Клик вне меню — скрыть
+    qApp->installEventFilter(this);
 
     connect(m_loginWindow, &LoginWindow::loginSuccessful, this, &MainWindow::onLoginSuccess);
     connect(m_loginWindow, &LoginWindow::registerRequested, this, &MainWindow::onShowRegisterWindow);
@@ -61,6 +95,24 @@ MainWindow::MainWindow(QWidget* parent)
 
 MainWindow::~MainWindow() = default;
 
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::MouseButtonPress) {
+        if (m_profileMenu && m_profileMenu->isVisible() && m_profileBtn) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            QPoint globalPos = me->globalPosition().toPoint();
+
+            QRect menuRect(m_profileMenu->mapToGlobal(QPoint(0, 0)), m_profileMenu->size());
+            QRect btnRect(m_profileBtn->mapToGlobal(QPoint(0, 0)), m_profileBtn->size());
+
+            if (!menuRect.contains(globalPos) && !btnRect.contains(globalPos)) {
+                hideProfileMenu();
+            }
+        }
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
 void MainWindow::setupUi()
 {
     auto* central = new QWidget(this);
@@ -71,9 +123,7 @@ void MainWindow::setupUi()
     mainLayout->setContentsMargins(30, 30, 30, 30);
     mainLayout->setSpacing(20);
 
-    // =========================================================
-    // ВЕРХНЯЯ ПАНЕЛЬ
-    // =========================================================
+    // === ВЕРХНЯЯ ПАНЕЛЬ ===
     auto* topLayout = new QHBoxLayout();
     auto* titleLayout = new QVBoxLayout();
     titleLayout->setSpacing(2);
@@ -96,6 +146,7 @@ void MainWindow::setupUi()
     m_profileBtn->setIconSize(QSize(20, 20));
     m_profileBtn->setCursor(Qt::PointingHandCursor);
     m_profileBtn->setMinimumHeight(40);
+    m_profileBtn->setFixedWidth(320);
     connect(m_profileBtn, &QPushButton::clicked, this, &MainWindow::onProfileButtonClicked);
 
     auto* btnExit = new QToolButton(this);
@@ -113,9 +164,7 @@ void MainWindow::setupUi()
     topLayout->addStretch();
     topLayout->addLayout(btnLayout);
 
-    // =========================================================
-    // ЦЕНТРАЛЬНАЯ ПАНЕЛЬ (КАРТОЧКИ)
-    // =========================================================
+    // === ЦЕНТРАЛЬНАЯ ПАНЕЛЬ (КАРТОЧКИ) ===
     auto* centerLayout = new QHBoxLayout();
     centerLayout->setSpacing(30);
     centerLayout->setAlignment(Qt::AlignCenter);
@@ -157,9 +206,7 @@ void MainWindow::setupUi()
     centerLayout->addWidget(btnBarter);
     centerLayout->addWidget(btnItems);
 
-    // =========================================================
-    // НИЖНЯЯ ПАНЕЛЬ
-    // =========================================================
+    // === НИЖНЯЯ ПАНЕЛЬ ===
     auto* bottomLayout = new QHBoxLayout();
     bottomLayout->addStretch();
 
@@ -179,23 +226,118 @@ void MainWindow::setupUi()
 }
 
 // =========================================================
+// МЕНЮ ПРОФИЛЯ
+// =========================================================
+
+void MainWindow::showProfileMenu()
+{
+    if (!m_profileMenu || !m_profileBtn) return;
+
+    // Сначала показываем меню, чтобы Qt применила QSS и посчитала финальный размер
+    m_profileMenu->show();
+    m_profileMenu->raise();
+    m_profileMenu->adjustSize();
+
+    int menuWidth = m_profileMenu->width();
+    int menuHeight = m_profileMenu->height();
+
+    // Точка (центр нижней грани кнопки) в глобальных координатах
+    QPoint globalAnchor = m_profileBtn->mapToGlobal(
+        QPoint(m_profileBtn->width() / 2, m_profileBtn->height()));
+
+    // Переводим в координаты MainWindow
+    QPoint localAnchor = mapFromGlobal(globalAnchor);
+
+    // Верхний левый угол меню: по центру кнопки
+    int x = localAnchor.x() - menuWidth / 2;
+    int y = localAnchor.y() + 8;
+
+    // Ограничиваем по границам окна
+    if (x < 10) x = 10;
+    if (x + menuWidth > width() - 10) x = width() - menuWidth - 10;
+    if (y + menuHeight > height() - 10) y = height() - menuHeight - 10;
+
+    QPoint endPos(x, y);
+    QPoint startPos(x, y - 8);
+
+    // Резкое перемещение в стартовую позицию, чтобы не было «прыжка»
+    m_profileMenu->move(startPos);
+
+    // Диагностика (потом уберём)
+    qDebug() << "=== PROFILE MENU DEBUG ===";
+    qDebug() << "Btn width:" << m_profileBtn->width() << "Btn x:" << m_profileBtn->x();
+    qDebug() << "Global anchor:" << globalAnchor;
+    qDebug() << "Local anchor:" << localAnchor;
+    qDebug() << "Menu size:" << menuWidth << "x" << menuHeight;
+    qDebug() << "MainWindow size:" << width() << "x" << height();
+    qDebug() << "Final pos:" << endPos;
+
+    // Анимация позиции
+    auto* posAnim = new QPropertyAnimation(m_profileMenu, "pos", m_profileMenu);
+    posAnim->setDuration(200);
+    posAnim->setStartValue(startPos);
+    posAnim->setEndValue(endPos);
+    posAnim->setEasingCurve(QEasingCurve::OutCubic);
+    posAnim->start(QAbstractAnimation::DeleteWhenStopped);
+
+    // Анимация прозрачности
+    auto* effect = new QGraphicsOpacityEffect(m_profileMenu);
+    effect->setOpacity(0.0);
+    m_profileMenu->setGraphicsEffect(effect);
+
+    auto* fadeAnim = new QPropertyAnimation(effect, "opacity", m_profileMenu);
+    fadeAnim->setDuration(200);
+    fadeAnim->setStartValue(0.0);
+    fadeAnim->setEndValue(1.0);
+    fadeAnim->setEasingCurve(QEasingCurve::OutCubic);
+    fadeAnim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void MainWindow::hideProfileMenu()
+{
+    if (!m_profileMenu || !m_profileMenu->isVisible()) return;
+
+    QPoint currentPos = m_profileMenu->pos();
+    QPoint endPos(currentPos.x(), currentPos.y() - 6);
+
+    auto* posAnim = new QPropertyAnimation(m_profileMenu, "pos", m_profileMenu);
+    posAnim->setDuration(150);
+    posAnim->setStartValue(currentPos);
+    posAnim->setEndValue(endPos);
+    posAnim->setEasingCurve(QEasingCurve::InCubic);
+
+    auto* effect = qobject_cast<QGraphicsOpacityEffect*>(m_profileMenu->graphicsEffect());
+    if (effect) {
+        auto* fadeAnim = new QPropertyAnimation(effect, "opacity", m_profileMenu);
+        fadeAnim->setDuration(150);
+        fadeAnim->setStartValue(effect->opacity());
+        fadeAnim->setEndValue(0.0);
+        fadeAnim->setEasingCurve(QEasingCurve::InCubic);
+        connect(fadeAnim, &QPropertyAnimation::finished, this, [this]() {
+            m_profileMenu->hide();
+            m_profileMenu->setGraphicsEffect(nullptr);
+            });
+        fadeAnim->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+    else {
+        connect(posAnim, &QPropertyAnimation::finished, m_profileMenu, &QWidget::hide);
+    }
+
+    posAnim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+// =========================================================
 // БЛОКИРОВКА / РАЗБЛОКИРОВКА MAINWINDOW
 // =========================================================
 
 void MainWindow::blockMainWindow()
 {
-    // Отключаем всю центральную часть — клики не доходят до кнопок,
-    // подсветка при наведении тоже не работает
-    if (centralWidget()) {
-        centralWidget()->setEnabled(false);
-    }
+    if (centralWidget()) centralWidget()->setEnabled(false);
 }
 
 void MainWindow::unblockMainWindow()
 {
-    if (centralWidget()) {
-        centralWidget()->setEnabled(true);
-    }
+    if (centralWidget()) centralWidget()->setEnabled(true);
 }
 
 // =========================================================
@@ -215,17 +357,19 @@ void MainWindow::onProfileButtonClicked()
     if (m_currentUser.isEmpty()) {
         m_registerWindow->hide();
         applyBlurEffect();
-        blockMainWindow();               // <--- БЛОКИРУЕМ
+        blockMainWindow();
         positionDialog(m_loginWindow);
         m_loginWindow->show();
         m_loginWindow->raise();
         m_loginWindow->activateWindow();
+        m_loginWindow->setFocus();
     }
     else {
-        QMenu menu(this);
-        QAction* logoutAction = menu.addAction("Выйти");
-        if (menu.exec(m_profileBtn->mapToGlobal(QPoint(0, m_profileBtn->height()))) == logoutAction) {
-            onLogout();
+        if (m_profileMenu && m_profileMenu->isVisible()) {
+            hideProfileMenu();
+        }
+        else {
+            showProfileMenu();
         }
     }
 }
@@ -236,28 +380,28 @@ void MainWindow::onLoginSuccess(const QString& username)
     updateProfileButton();
     m_loginWindow->hide();
     removeBlurEffect();
-    unblockMainWindow();                 // <--- РАЗБЛОКИРУЕМ
+    unblockMainWindow();
 }
 
 void MainWindow::onShowRegisterWindow()
 {
     m_loginWindow->hide();
     m_registerWindow->clearFields();
-    // Главное окно уже заблокировано, не трогаем
     positionDialog(m_registerWindow);
     m_registerWindow->show();
     m_registerWindow->raise();
     m_registerWindow->activateWindow();
+    m_registerWindow->setFocus();
 }
 
 void MainWindow::onShowLoginWindow()
 {
     m_registerWindow->hide();
-    // Главное окно всё ещё заблокировано
     positionDialog(m_loginWindow);
     m_loginWindow->show();
     m_loginWindow->raise();
     m_loginWindow->activateWindow();
+    m_registerWindow->setFocus();
 }
 
 void MainWindow::onLogout()
@@ -276,7 +420,7 @@ void MainWindow::updateProfileButton()
         m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOff", QColor("#000000")));
     }
     else {
-        m_profileBtn->setText(" " + m_currentUser);
+        m_profileBtn->setText("ЛИЧНЫЙ КАБИНЕТ");
         m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOn", QColor("#000000")));
     }
 }
@@ -291,7 +435,7 @@ void MainWindow::applyBlurEffect()
 void MainWindow::removeBlurEffect()
 {
     centralWidget()->setGraphicsEffect(nullptr);
-    unblockMainWindow();                 // <--- РАЗБЛОКИРУЕМ при закрытии диалога
+    unblockMainWindow();
 }
 
 // =========================================================

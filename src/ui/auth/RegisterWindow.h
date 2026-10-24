@@ -8,6 +8,7 @@ class QWidget;
 class QVBoxLayout;
 class QShowEvent;
 class QHideEvent;
+class QKeyEvent;
 class RequirementsPanel;
 
 class RegisterWindow : public QDialog
@@ -26,6 +27,7 @@ protected:
     void closeEvent(QCloseEvent* event) override;
     void showEvent(QShowEvent* event) override;
     void hideEvent(QHideEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
     void onRegisterClicked();

@@ -14,6 +14,7 @@ class BarterWindow;
 class ItemsWindow;
 class LoginWindow;
 class RegisterWindow;
+class ProfileMenu;
 
 class MainWindow : public QMainWindow
 {
@@ -22,6 +23,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
     void onAuctionClicked();
@@ -42,8 +46,11 @@ private:
     void applyBlurEffect();
     void removeBlurEffect();
     void positionDialog(QWidget* dialog);
-    void blockMainWindow();      // <--- НОВОЕ
-    void unblockMainWindow();    // <--- НОВОЕ
+    void blockMainWindow();
+    void unblockMainWindow();
+
+    void showProfileMenu();
+    void hideProfileMenu();
 
     StalzoneAPI* m_api = nullptr;
     GameDatabase* m_db = nullptr;
@@ -54,6 +61,7 @@ private:
 
     LoginWindow* m_loginWindow = nullptr;
     RegisterWindow* m_registerWindow = nullptr;
+    ProfileMenu* m_profileMenu = nullptr;
 
     QPushButton* m_profileBtn = nullptr;
     QString m_currentUser;

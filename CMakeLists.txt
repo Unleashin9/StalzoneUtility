@@ -40,6 +40,8 @@ add_executable(StalzoneUtility
     src/ui/widgets/Toast.cpp
     src/ui/widgets/RequirementsPanel.h
     src/ui/widgets/RequirementsPanel.cpp
+    src/ui/widgets/ProfileMenu.cpp
+    src/ui/widgets/ProfileMenu.h
 )
 
 # Убираем консольное окно при запуске в Windows

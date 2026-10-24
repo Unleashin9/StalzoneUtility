@@ -17,16 +17,14 @@
 #include <QTimer>
 #include <QShowEvent>
 #include <QHideEvent>
-#include <QShortcut>
+#include <QKeyEvent>
 
 RegisterWindow::RegisterWindow(QWidget* parent) : QDialog(parent)
 {
-    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setFixedWidth(420);
-
-    auto* escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-    connect(escShortcut, &QShortcut::activated, this, &RegisterWindow::close);
+    setFocusPolicy(Qt::StrongFocus); // <--- явно разрешаем фокус
 
     m_reqPanel = new RequirementsPanel(this);
     m_reqPanel->hide();
@@ -247,6 +245,15 @@ void RegisterWindow::hideEvent(QHideEvent* event)
 {
     QDialog::hideEvent(event);
     if (m_reqPanel) m_reqPanel->hide();
+}
+
+void RegisterWindow::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Escape) {
+        close();
+        return;
+    }
+    QDialog::keyPressEvent(event);
 }
 
 void RegisterWindow::addDivider(QVBoxLayout* layout, QWidget* parent)

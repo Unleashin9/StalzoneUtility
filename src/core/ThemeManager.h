@@ -1,5 +1,4 @@
 ﻿#pragma once
-
 #include <QObject>
 #include <QString>
 #include <QIcon>
@@ -8,7 +7,6 @@
 class ThemeManager : public QObject
 {
     Q_OBJECT
-
 public:
     enum class ThemeType { None, Dark, Light };
 
@@ -17,8 +15,12 @@ public:
     void setTheme(ThemeType theme);
     ThemeType currentTheme() const { return m_currentTheme; }
 
-    // Метод для перекраски SVG-иконок
     QIcon getIcon(const QString& iconName, const QColor& color, const QString& folder = QStringLiteral("MainWindow")) const;
+
+    QColor accentColor() const;
+
+    // Генерирует PNG во временную папку и возвращает путь к файлу
+    QString iconAsTempFile(const QString& iconName, const QColor& color, const QString& folder = QStringLiteral("LoginWindow")) const;
 
 signals:
     void themeChanged();
