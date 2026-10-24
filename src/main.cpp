@@ -1,32 +1,25 @@
-// Подключаем QApplication — это класс, управляющий жизнью любого GUI-приложения.
-// Он обрабатывает события (клики, нажатия клавиш), рисует окна, крутит event loop.
-#include <QApplication>
-
-// Наш главный класс окна.
+п»ї#include <QApplication>
 #include "ui/MainWindow.h"
+#include "core/ThemeManager.h"
+#include <QDebug>
 
 int main(int argc, char* argv[])
 {
-    // QApplication ОБЯЗАТЕЛЕН для любого приложения с интерфейсом.
-    // Он должен быть создан ПЕРВЫМ, до любых виджетов.
-    // argc, argv — аргументы командной строки (пока не используем, но пусть будут).
     QApplication app(argc, argv);
 
-    // QSettings (внутри) будет использовать эти значения, чтобы понимать,
-    // куда сохранять настройки пользователя (например, логин, последнюю вкладку).
-    // Сейчас просто закладываем "паспорт" приложения.
+    // 1. РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ РёСЃРїРѕР»СЊР·СѓРµРј Fusion (Р»СѓС‡С€Рµ РґСЂСѓР¶РёС‚ СЃ QSS)
+    QApplication::setStyle("Fusion");
+
     QCoreApplication::setOrganizationName("STALZONE");
     QCoreApplication::setApplicationName("Utility");
     QCoreApplication::setApplicationVersion("0.1.0");
 
-    // Создаём главное окно. Оно живёт в стеке — уничтожится автоматически,
-    // когда main() выйдет (после закрытия окна).
-    MainWindow window;
-    window.show();  // Показать окно. До этого вызова оно невидимо.
+    // 2. РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚РµРјРЅСѓСЋ С‚РµРјСѓ С‡РµСЂРµР· РЅР°С€ ThemeManager
+    qDebug() << "Applying theme...";
+    ThemeManager::instance().setTheme(ThemeManager::ThemeType::Dark);
 
-    // app.exec() запускает event loop — бесконечный цикл, который ждёт
-    // событий (клики, таймеры, сеть) и передаёт их виджетам.
-    // Программа здесь "висит", пока пользователь не закроет окно.
-    // Возвращаемое значение — код выхода (0 = успех).
+    MainWindow window;
+    window.show(); // РџРѕРєР° РѕСЃС‚Р°РІР»СЏРµРј show(), Р° РЅРµ showFullScreen(), С‡С‚РѕР±С‹ РїСЂРѕРІРµСЂРёС‚СЊ
+
     return app.exec();
 }
