@@ -11,6 +11,7 @@
 #include <QGraphicsBlurEffect>
 #include <QSettings>
 #include <QMenu>
+#include <QAction>
 
 #include "api/StalzoneAPI.h"
 #include "core/GameDatabase.h"
@@ -30,17 +31,21 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle("STALZONE Utility");
     resize(1200, 750);
 
+    // Инициализация базы данных пользователей
     DBManager::instance().init();
 
+    // Инициализация API и базы предметов
     m_api = new StalzoneAPI(this);
     m_db = new GameDatabase(this);
     m_db->load();
 
+    // Создаем окна авторизации
     m_loginWindow = new LoginWindow(this);
     m_registerWindow = new RegisterWindow(this);
 
     setupUi();
 
+    // Связываем сигналы авторизации
     connect(m_loginWindow, &LoginWindow::loginSuccessful, this, &MainWindow::onLoginSuccess);
     connect(m_loginWindow, &LoginWindow::registerRequested, this, &MainWindow::onShowRegisterWindow);
     connect(m_loginWindow, &LoginWindow::windowClosed, this, &MainWindow::removeBlurEffect);
@@ -49,6 +54,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_registerWindow, &RegisterWindow::loginRequested, this, &MainWindow::onShowLoginWindow);
     connect(m_registerWindow, &RegisterWindow::windowClosed, this, &MainWindow::removeBlurEffect);
 
+    // Автоматический вход, если пользователь сохранил сессию
     QSettings settings;
     if (settings.value(AuthSettings::kRememberMe, false).toBool()) {
         QString savedUser = settings.value(AuthSettings::kUsername).toString();
@@ -70,6 +76,9 @@ void MainWindow::setupUi()
     mainLayout->setContentsMargins(30, 30, 30, 30);
     mainLayout->setSpacing(20);
 
+    // =========================================================
+    // ВЕРХНЯЯ ПАНЕЛЬ
+    // =========================================================
     auto* topLayout = new QHBoxLayout();
     auto* titleLayout = new QVBoxLayout();
     titleLayout->setSpacing(2);
@@ -109,32 +118,53 @@ void MainWindow::setupUi()
     topLayout->addStretch();
     topLayout->addLayout(btnLayout);
 
+    // =========================================================
+    // ЦЕНТРАЛЬНАЯ ПАНЕЛЬ (КАРТОЧКИ)
+    // =========================================================
     auto* centerLayout = new QHBoxLayout();
     centerLayout->setSpacing(30);
     centerLayout->setAlignment(Qt::AlignCenter);
 
     auto* btnAuction = new QPushButton("Аукцион", this);
     btnAuction->setObjectName("btnAuctionCard");
-    btnAuction->setFixedSize(220, 160);
+    btnAuction->setFixedSize(220, 180);
     btnAuction->setCursor(Qt::PointingHandCursor);
+    QIcon auctionIcon = ThemeManager::instance().getIcon("auctionCard", QColor("#A3E635"));
+    if (!auctionIcon.isNull()) {
+        btnAuction->setIcon(auctionIcon);
+        btnAuction->setIconSize(QSize(48, 48));
+    }
     connect(btnAuction, &QPushButton::clicked, this, &MainWindow::onAuctionClicked);
 
     auto* btnBarter = new QPushButton("Калькулятор", this);
     btnBarter->setObjectName("btnBarterCard");
-    btnBarter->setFixedSize(220, 160);
+    btnBarter->setFixedSize(220, 180);
     btnBarter->setCursor(Qt::PointingHandCursor);
+    QIcon barterIcon = ThemeManager::instance().getIcon("barterCard", QColor("#A3E635"));
+    if (!barterIcon.isNull()) {
+        btnBarter->setIcon(barterIcon);
+        btnBarter->setIconSize(QSize(48, 48));
+    }
     connect(btnBarter, &QPushButton::clicked, this, &MainWindow::onBarterClicked);
 
     auto* btnItems = new QPushButton("База предметов", this);
     btnItems->setObjectName("btnItemsCard");
-    btnItems->setFixedSize(220, 160);
+    btnItems->setFixedSize(220, 180);
     btnItems->setCursor(Qt::PointingHandCursor);
+    QIcon itemsIcon = ThemeManager::instance().getIcon("itemsCard", QColor("#A3E635"));
+    if (!itemsIcon.isNull()) {
+        btnItems->setIcon(itemsIcon);
+        btnItems->setIconSize(QSize(48, 48));
+    }
     connect(btnItems, &QPushButton::clicked, this, &MainWindow::onItemsClicked);
 
     centerLayout->addWidget(btnAuction);
     centerLayout->addWidget(btnBarter);
     centerLayout->addWidget(btnItems);
 
+    // =========================================================
+    // НИЖНЯЯ ПАНЕЛЬ
+    // =========================================================
     auto* bottomLayout = new QHBoxLayout();
     bottomLayout->addStretch();
 
@@ -146,6 +176,7 @@ void MainWindow::setupUi()
     btnDiscord->setCursor(Qt::PointingHandCursor);
     bottomLayout->addWidget(btnDiscord);
 
+    // СБОРКА
     mainLayout->addLayout(topLayout);
     mainLayout->addStretch();
     mainLayout->addLayout(centerLayout);
@@ -153,16 +184,32 @@ void MainWindow::setupUi()
     mainLayout->addLayout(bottomLayout);
 }
 
+// =========================================================
+// ЛОГИКА АВТОРИЗАЦИИ
+// =========================================================
+
+void MainWindow::positionDialog(QWidget* dialog)
+{
+    // Позиционируем окно справа по центру экрана
+    int margin = 50;
+    int x = this->x() + this->width() - dialog->width() - margin;
+    int y = this->y() + (this->height() - dialog->height()) / 2;
+    dialog->move(x, y);
+}
+
 void MainWindow::onProfileButtonClicked()
 {
     if (m_currentUser.isEmpty()) {
+        // Не вошли — показываем окно входа
         m_registerWindow->hide();
         applyBlurEffect();
+        positionDialog(m_loginWindow);
         m_loginWindow->show();
         m_loginWindow->raise();
         m_loginWindow->activateWindow();
     }
     else {
+        // Уже вошли — меню выхода
         QMenu menu(this);
         QAction* logoutAction = menu.addAction("Выйти");
         if (menu.exec(m_profileBtn->mapToGlobal(QPoint(0, m_profileBtn->height()))) == logoutAction) {
@@ -183,6 +230,7 @@ void MainWindow::onShowRegisterWindow()
 {
     m_loginWindow->hide();
     m_registerWindow->clearFields();
+    positionDialog(m_registerWindow);
     m_registerWindow->show();
     m_registerWindow->raise();
     m_registerWindow->activateWindow();
@@ -191,6 +239,7 @@ void MainWindow::onShowRegisterWindow()
 void MainWindow::onShowLoginWindow()
 {
     m_registerWindow->hide();
+    positionDialog(m_loginWindow);
     m_loginWindow->show();
     m_loginWindow->raise();
     m_loginWindow->activateWindow();
@@ -228,6 +277,10 @@ void MainWindow::removeBlurEffect()
 {
     centralWidget()->setGraphicsEffect(nullptr);
 }
+
+// =========================================================
+// ПЕРЕКЛЮЧЕНИЕ ОКОН РАЗДЕЛОВ
+// =========================================================
 
 void MainWindow::showSubWindow(QWidget* window)
 {

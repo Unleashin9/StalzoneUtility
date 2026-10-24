@@ -135,9 +135,10 @@ QPushButton#btnItemsCard {
     color: #FFFFFF;
     border: 2px solid #4B5563;
     border-radius: 12px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
-    padding: 10px;
+    padding: 15px;
+    padding-top: 20px;
 }
 QPushButton#btnAuctionCard:hover, 
 QPushButton#btnBarterCard:hover, 
@@ -177,10 +178,12 @@ QPushButton#btnItemsCard:hover {
 
 /* Разделитель */
 #dialogContainer #dividerLine {
-    color: #4B5563;
-    background-color: #4B5563;
+    color: #333333;
+    background-color: #333333;
     max-height: 1px;
     border: none;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 /* Кнопка-ссылка */
@@ -191,10 +194,11 @@ QPushButton#btnItemsCard:hover {
     font-weight: normal;
     border: none;
     padding: 0px;
+    text-align: right;
 }
 #dialogContainer #linkButton:hover {
-    text-decoration: underline;
     color: #BEF264;
+    text-decoration: underline;
 }
 
 /* Главная кнопка формы */
@@ -214,7 +218,7 @@ QPushButton#btnItemsCard:hover {
     border: 1px solid #A3E635;
     color: #A3E635;
     border-radius: 6px;
-    padding: 5px 15px;
+    padding: 4px 15px;
     font-weight: bold;
     font-size: 12px;
 }
@@ -278,14 +282,15 @@ QPushButton#btnItemsCard:hover {
 #dialogContainer QCheckBox::indicator:checked {
     background-color: transparent;
     border: 1px solid #4B5563;
-    image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A3E635' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'></polyline></svg>");
+    /* Используем твою иконку. Если у тебя .png, напиши .png */
+    image: url(":/resources/icons/LoginWindow/rememberMe.svg"); 
 }
 
 /* ========================================================= */
 /* === 5. ОБЩИЕ ЭЛЕМЕНТЫ ===                                */
 /* ========================================================= */
 
-/* Фон для под-окон (Аукцион, Калькулятор, База), чтобы не были прозрачными */
+/* Фон для под-окон (Аукцион, Калькулятор, База) */
 #auctionRoot, #barterRoot, #itemsRoot {
     background-color: #1E1E1E;
 }

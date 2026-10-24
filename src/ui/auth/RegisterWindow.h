@@ -2,6 +2,7 @@
 #include <QDialog>
 
 class QLineEdit;
+class QWidget;
 
 class RegisterWindow : public QDialog
 {

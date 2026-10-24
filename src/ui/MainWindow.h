@@ -43,6 +43,7 @@ private:
     void updateProfileButton();
     void applyBlurEffect();
     void removeBlurEffect();
+    void positionDialog(QWidget* dialog); // <--- ДОБАВИЛИ
 
     StalzoneAPI* m_api = nullptr;
     GameDatabase* m_db = nullptr;

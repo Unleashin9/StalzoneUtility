@@ -9,12 +9,13 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QGraphicsDropShadowEffect>
 
 RegisterWindow::RegisterWindow(QWidget* parent) : QDialog(parent)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
     setAttribute(Qt::WA_TranslucentBackground);
-    setFixedSize(400, 600);
+    setFixedSize(420, 600);
 
     setupUi();
 }
@@ -28,8 +29,14 @@ void RegisterWindow::setupUi()
     container->setObjectName("dialogContainer");
     mainLayout->addWidget(container);
 
+    auto* shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(30);
+    shadow->setColor(QColor(0, 0, 0, 180));
+    shadow->setOffset(0, 0);
+    container->setGraphicsEffect(shadow);
+
     auto* layout = new QVBoxLayout(container);
-    layout->setContentsMargins(30, 30, 30, 30);
+    layout->setContentsMargins(30, 25, 30, 25);
     layout->setSpacing(15);
 
     auto* topBar = new QHBoxLayout();
@@ -94,6 +101,11 @@ void RegisterWindow::setupUi()
     layout->addWidget(registerBtn);
     layout->addWidget(loginBtn);
     layout->addStretch();
+
+    // Обработка Enter
+    connect(m_usernameEdit, &QLineEdit::returnPressed, m_passwordEdit, qOverload<>(&QWidget::setFocus));
+    connect(m_passwordEdit, &QLineEdit::returnPressed, m_confirmEdit, qOverload<>(&QWidget::setFocus));
+    connect(m_confirmEdit, &QLineEdit::returnPressed, this, &RegisterWindow::onRegisterClicked);
 }
 
 void RegisterWindow::clearFields()
