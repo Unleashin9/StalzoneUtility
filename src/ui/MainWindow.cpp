@@ -1,6 +1,4 @@
 ﻿#include "MainWindow.h"
-
-// Подключаем конкретные виджеты
 #include <QListWidget>
 #include <QStackedWidget>
 #include <QLabel>
@@ -8,9 +6,10 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-// Подключаем наш API и новую страницу аукциона
 #include "api/StalzoneAPI.h"
+#include "core/GameDatabase.h" // <--- ДОБАВИЛИ
 #include "ui/pages/AuctionWindow.h"
+#include "ui/pages/BarterWindow.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -18,15 +17,14 @@ MainWindow::MainWindow(QWidget* parent)
     setWindowTitle("STALZONE Utility — v0.1.0");
     resize(1200, 750);
 
-    // 1. Сначала создаем API-менеджер.
-    // Передаем 'this' в качестве родителя, чтобы Qt автоматически удалила его
-    // при закрытии главного окна (защита от утечек памяти).
     m_api = new StalzoneAPI(this);
 
-    // 2. Собираем интерфейс.
+    // Инициализируем базу данных и запускаем загрузку
+    m_db = new GameDatabase(this);
+    m_db->load();
+
     setupUi();
 
-    // 3. Связываем меню слева со стопкой страниц справа.
     connect(m_sidebar, &QListWidget::currentRowChanged,
         m_pages, &QStackedWidget::setCurrentIndex);
 }
@@ -35,7 +33,6 @@ void MainWindow::setupUi()
 {
     auto* central = new QWidget(this);
     setCentralWidget(central);
-
     auto* mainLayout = new QHBoxLayout(central);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
@@ -51,32 +48,15 @@ void MainWindow::createSidebar()
 {
     m_sidebar = new QListWidget(this);
     m_sidebar->setFixedWidth(220);
-
-    // Стилизация бокового меню (тёмная тема)
     m_sidebar->setStyleSheet(
-        "QListWidget {"
-        "  background-color: #1e1e1e;"
-        "  color: #cccccc;"
-        "  border: none;"
-        "  font-size: 14px;"
-        "  padding: 8px 0;"
-        "}"
-        "QListWidget::item {"
-        "  padding: 10px 16px;"
-        "}"
-        "QListWidget::item:selected {"
-        "  background-color: #2d5a27;"
-        "  color: #ffffff;"
-        "}"
+        "QListWidget { background-color: #1e1e1e; color: #cccccc; border: none; font-size: 14px; padding: 8px 0; }"
+        "QListWidget::item { padding: 10px 16px; }"
+        "QListWidget::item:selected { background-color: #2d5a27; color: #ffffff; }"
     );
 
     const QStringList sections = {
-        "🏠  Главная",
-        "🧮  Калькуляторы",
-        "📦  База предметов",
-        "🔨  Убежище",
-        "💰  Аукцион",
-        "👤  Игроки"
+        "🏠  Главная", "🧮  Калькуляторы", "📦  База предметов",
+        "🔨  Убежище", "💰  Аукцион", "👤  Игроки"
     };
     m_sidebar->addItems(sections);
     m_sidebar->setCurrentRow(0);
@@ -86,7 +66,7 @@ void MainWindow::createPages()
 {
     m_pages = new QStackedWidget(this);
 
-    // --- 0. Главная (заглушка) ---
+    // 0. Главная
     auto* homePage = new QWidget(this);
     homePage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
     auto* homeLayout = new QVBoxLayout(homePage);
@@ -95,16 +75,10 @@ void MainWindow::createPages()
     homeLayout->addWidget(homeLabel);
     m_pages->addWidget(homePage);
 
-    // --- 1. Калькуляторы (заглушка) ---
-    auto* calcPage = new QWidget(this);
-    calcPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
-    auto* calcLayout = new QVBoxLayout(calcPage);
-    auto* calcLabel = new QLabel("<h1>Калькуляторы (в разработке)</h1>", calcPage);
-    calcLabel->setAlignment(Qt::AlignCenter);
-    calcLayout->addWidget(calcLabel);
-    m_pages->addWidget(calcPage);
+    // 1. Калькуляторы (BarterWindow) - передаем m_db
+    m_pages->addWidget(new BarterWindow(m_db, this));
 
-    // --- 2. База предметов (заглушка) ---
+    // 2. База предметов (заглушка)
     auto* dbPage = new QWidget(this);
     dbPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
     auto* dbLayout = new QVBoxLayout(dbPage);
@@ -113,7 +87,7 @@ void MainWindow::createPages()
     dbLayout->addWidget(dbLabel);
     m_pages->addWidget(dbPage);
 
-    // --- 3. Убежище (заглушка) ---
+    // 3. Убежище (заглушка)
     auto* hideoutPage = new QWidget(this);
     hideoutPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
     auto* hideoutLayout = new QVBoxLayout(hideoutPage);
@@ -122,12 +96,10 @@ void MainWindow::createPages()
     hideoutLayout->addWidget(hideoutLabel);
     m_pages->addWidget(hideoutPage);
 
-    // --- 4. АУКЦИОН (реальная страница) ---
-    // Создаем наш новый виджет и передаем ему API для запросов.
-    auto* auctionWindow = new AuctionWindow(m_api, this);
-    m_pages->addWidget(auctionWindow);
+    // 4. Аукцион (AuctionWindow) - передаем m_api и m_db
+    m_pages->addWidget(new AuctionWindow(m_api, m_db, this));
 
-    // --- 5. Игроки (заглушка) ---
+    // 5. Игроки (заглушка)
     auto* playersPage = new QWidget(this);
     playersPage->setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
     auto* playersLayout = new QVBoxLayout(playersPage);

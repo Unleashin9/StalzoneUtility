@@ -1,5 +1,6 @@
 ﻿#include "AuctionWindow.h"
 #include "api/StalzoneAPI.h"
+#include "core/GameDatabase.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -11,12 +12,10 @@
 #include <QJsonObject>
 #include <QDebug>
 
-AuctionWindow::AuctionWindow(StalzoneAPI* api, QWidget* parent)
-    : QWidget(parent), m_api(api)
+AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent)
+    : QWidget(parent), m_api(api), m_db(db)
 {
     setupUi();
-
-    // Связываем сигналы API с нашими слотами
     connect(m_api, &StalzoneAPI::lotsReceived, this, &AuctionWindow::onLotsReceived);
     connect(m_api, &StalzoneAPI::errorOccurred, this, &AuctionWindow::onApiError);
 }
@@ -26,7 +25,6 @@ void AuctionWindow::setupUi()
     setStyleSheet("background-color: #1e1e1e; color: #cccccc;");
     auto* layout = new QVBoxLayout(this);
 
-    // --- Панель управления ---
     auto* controlsLayout = new QHBoxLayout();
 
     m_itemSelector = new QComboBox(this);
@@ -41,14 +39,12 @@ void AuctionWindow::setupUi()
     controlsLayout->addWidget(m_refreshBtn);
     controlsLayout->addStretch();
 
-    // --- Таблица ---
     m_table = new QTableWidget(this);
     m_table->setColumnCount(4);
     m_table->setHorizontalHeaderLabels({ "Предмет", "Количество", "Цена выкупа", "Время окончания" });
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
-
     m_table->setStyleSheet(
         "QTableWidget { background-color: #252525; gridline-color: #444; color: #ccc; }"
         "QHeaderView::section { background-color: #1e1e1e; padding: 4px; border: 1px solid #444; color: #fff; }"
@@ -64,9 +60,7 @@ void AuctionWindow::onRefreshClicked()
     m_refreshBtn->setEnabled(false);
     m_refreshBtn->setText("Загрузка...");
     m_table->setRowCount(0);
-
-    QString itemId = m_itemSelector->currentData().toString();
-    m_api->fetchAuctionLots("ru", itemId);
+    m_api->fetchAuctionLots("ru", m_itemSelector->currentData().toString());
 }
 
 void AuctionWindow::onLotsReceived(const QJsonArray& lots)
@@ -91,11 +85,12 @@ void AuctionWindow::populateTable(const QJsonArray& lots)
         QJsonObject lot = lots[i].toObject();
 
         QString itemId = lot["itemId"].toString();
+        QString itemName = m_db->itemName(itemId); // <--- ПОЛУЧАЕМ НАЗВАНИЕ
         int amount = lot["amount"].toInt();
         int price = lot["buyoutPrice"].toInt();
         QString endTime = lot["endTime"].toString();
 
-        m_table->setItem(i, 0, new QTableWidgetItem(itemId));
+        m_table->setItem(i, 0, new QTableWidgetItem(itemName)); // <--- ПИШЕМ НАЗВАНИЕ
         m_table->setItem(i, 1, new QTableWidgetItem(QString::number(amount)));
         m_table->setItem(i, 2, new QTableWidgetItem(QString::number(price) + " руб."));
 

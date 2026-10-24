@@ -17,9 +17,13 @@ add_executable(StalzoneUtility
     src/ui/MainWindow.h
     src/api/StalzoneAPI.cpp
     src/api/StalzoneAPI.h
+    src/core/GameDatabase.cpp
+    src/core/GameDatabase.h
     src/ui/pages/AuctionWindow.cpp
     src/ui/pages/AuctionWindow.h
- )
+    src/ui/pages/BarterWindow.cpp
+    src/ui/pages/BarterWindow.h
+)
 
 target_include_directories(StalzoneUtility PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
