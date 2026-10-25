@@ -1,30 +1,21 @@
 ﻿/* ========================================================= */
-/* === ПАЛИТРА "РЖАВАЯ ЗОНА" ===                             */
+/* === 1. ПАЛИТРА (справочник) ===                           */
 /* ========================================================= */
 /*   ФОН:           #181411 (тёплый графит)                  */
 /*                  #1F1A16 (панели top/bottom)              */
 /*                  #221C18 (кнопки/поля)                    */
-/*   АКЦЕНТ:        #F0A93B (янтарный / ржавчина)            */
+/*   АКЦЕНТ:        @accent@ (янтарный / ржавчина)           */
 /*                  #F5BD6A (hover)                          */
 /*                  #D6932F (pressed)                        */
-/*   ТЕКСТ:         #F5E6D3 (акцентный / кремовый)          */
+/*   ТЕКСТ:         #F5E6D3 (акцентный / кремовый)           */
 /*                  #A8998A (обычный / пыльный)              */
 /*   РАМКИ:         #3A2F26                                  */
-/*   ОПАСНОСТЬ:     #E5533D / #F07662 / #CC4730             */
+/*   ОПАСНОСТЬ:     #E5533D / #F07662 / #CC4730              */
 /* ========================================================= */
 
 /* ========================================================= */
-/* === 1. ГЛОБАЛЬНЫЕ НАСТРОЙКИ ===                           */
+/* === 2. ГЛОБАЛЬНЫЕ НАСТРОЙКИ ===                           */
 /* ========================================================= */
-
-/* Принудительная прозрачность для всех кастомных окон, чтобы не было темных углов */
-QDialog, 
-#loginDialog, 
-#registerDialog, 
-#requirementsPanel {
-    background: transparent;
-    background-color: transparent;
-}
 
 QWidget {
     background-color: #181411;
@@ -41,6 +32,13 @@ QMainWindow, QDialog {
     background-color: transparent;
 }
 
+/* Принудительная прозрачность для всех кастомных окон (чтобы не было темных углов) */
+QDialog, #loginDialog, #registerDialog, #requirementsPanel {
+    background: transparent;
+    background-color: transparent;
+}
+
+/* Базовая кнопка (fallback) */
 QPushButton {
     background-color: @accent@;
     color: #181411;
@@ -57,7 +55,7 @@ QPushButton:disabled {
 }
 
 /* ========================================================= */
-/* === 2. MAINWINDOW ===                                     */
+/* === 3. MAINWINDOW ===                                     */
 /* ========================================================= */
 
 #mainContainer {
@@ -66,6 +64,7 @@ QPushButton:disabled {
     border-radius: 0px;
 }
 
+/* Верхняя полоса-шапка */
 #topBar {
     background-color: #1F1A16;
     border: none;
@@ -73,6 +72,7 @@ QPushButton:disabled {
     border-radius: 0;
 }
 
+/* Логотип-кнопка (левый верхний угол) — АБСОЛЮТНО СТАТИЧНАЯ */
 #logoBtn {
     background: transparent;
     background-color: transparent;
@@ -97,6 +97,7 @@ QPushButton:disabled {
     outline: none;
 }
 
+/* Кнопка входа/профиля */
 #btnLogin {
     background-color: @accent@;
     color: #181411;
@@ -111,6 +112,7 @@ QPushButton:disabled {
 #btnLogin:hover   { background-color: #F5BD6A; }
 #btnLogin:pressed { background-color: #D6932F; }
 
+/* Кнопки-иконки */
 QToolButton#btnExit, QToolButton#btnDiscord {
     border: none;
     border-radius: 8px;
@@ -129,7 +131,7 @@ QToolButton#btnDiscord:hover   { background-color: #7983F5; }
 QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 
 /* ========================================================= */
-/* === 3. ДИАЛОГИ АВТОРИЗАЦИИ (LOGIN / REGISTER) ===         */
+/* === 4. ДИАЛОГИ АВТОРИЗАЦИИ (LOGIN / REGISTER) ===         */
 /* ========================================================= */
 
 #dialogContainer {
@@ -245,7 +247,7 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 }
 
 /* ========================================================= */
-/* === 4. ОБЩИЕ ЭЛЕМЕНТЫ ===                                 */
+/* === 5. ОБЩИЕ ЭЛЕМЕНТЫ (ТАБЛИЦЫ, ПОЛЯ, СКРОЛЛ) ===        */
 /* ========================================================= */
 
 #auctionRoot, #barterRoot, #itemsRoot {
@@ -324,22 +326,21 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 /* ========================================================= */
-/* === 5. УВЕДОМЛЕНИЯ (TOAST) ===                            */
+/* === 6. УВЕДОМЛЕНИЯ (TOAST) ===                            */
 /* ========================================================= */
 
 #toastError {
     background-color: #1F1A16;
-    color: #E5533D;          /* Кирпично-красный */
+    color: #E5533D;
     border: 1px solid #E5533D;
     border-radius: 8px;
     padding: 12px 24px;
     font-weight: bold;
     font-size: 13px;
 }
-
 #toastSuccess {
     background-color: #1F1A16;
-    color: @accent@;         /* Янтарный (берется из ThemeManager) */
+    color: @accent@;
     border: 1px solid @accent@;
     border-radius: 8px;
     padding: 12px 24px;
@@ -348,7 +349,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 /* ========================================================= */
-/* === 6. ПАНЕЛЬ ТРЕБОВАНИЙ ===                              */
+/* === 7. ПАНЕЛЬ ТРЕБОВАНИЙ ===                              */
 /* ========================================================= */
 
 #requirementsContainer {
@@ -364,7 +365,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 /* ========================================================= */
-/* === 7. МЕНЮ ПРОФИЛЯ ===                                   */
+/* === 8. МЕНЮ ПРОФИЛЯ ===                                   */
 /* ========================================================= */
 
 #profileMenu {
@@ -392,28 +393,31 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 /* ========================================================= */
-/* === 9. SETTINGS WINDOW ===                                */
+/* === 9. SETTINGS WINDOW (ГЛАВНОЕ ОКНО) ===                 */
 /* ========================================================= */
 
 #settingsRoot {
-    background-color: #181411; /* Или твой цвет основного фона */
+    background-color: #181411;
+}
+
+#settingsContent {
+    background-color: #181411;
 }
 
 /* ========================================================= */
-/* === 10. SETTINGS WINDOW (BOTTOM BAR) ===                  */
+/* === 10. SETTINGS WINDOW (НИЖНЯЯ ПАНЕЛЬ) ===               */
 /* ========================================================= */
 
 #bottomBar {
-    background-color: #1F1A16; /* Тот же цвет, что у topBar */
+    background-color: #1F1A16;
     border: none;
-    border-top: 1px solid #3A2F26; /* Полоска сверху */
+    border-top: 1px solid #3A2F26;
     border-radius: 0;
 }
 
-/* Ссылки в нижней панели */
 QPushButton#footerLink {
     background-color: transparent;
-    color: #F5E6D3; /* Светлый кремовый, чтобы было видно */
+    color: #F5E6D3;
     border: none;
     font-size: 13px;
     font-weight: normal;
@@ -421,7 +425,7 @@ QPushButton#footerLink {
     padding: 0px;
 }
 QPushButton#footerLink:hover {
-    color: @accent@; /* Янтарный при наведении */
+    color: @accent@;
     text-decoration: underline;
 }
 QPushButton#footerLink:pressed {
@@ -429,11 +433,11 @@ QPushButton#footerLink:pressed {
 }
 
 /* ========================================================= */
-/* === 12. SETTINGS WINDOW SIDEBAR ===                       */
+/* === 11. SETTINGS WINDOW (САЙДБАР) ===                     */
 /* ========================================================= */
 
 #settingsSidebar {
-    background-color: #141110; /* Чуть темнее контента, чтобы выделить панель */
+    background-color: #141110;
     border-right: 1px solid #3A2F26;
 }
 
@@ -476,4 +480,29 @@ QPushButton#footerLink:pressed {
     font-size: 14px;
     font-weight: bold;
     padding-left: 15px;
+}
+
+/* ========================================================= */
+/* === 12. SETTINGS WINDOW (ПАНЕЛЬ-ЗАГОЛОВОК СТРАНИЦЫ) ===   */
+/* ========================================================= */
+
+#contentHeaderPanel {
+    background-color: #1F1A16;
+    border-bottom: 1px solid #3A2F26;
+    border-radius: 0;
+}
+
+#pageTitle {
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: bold;
+    background: transparent;
+}
+
+#pagesStack {
+    background-color: #181411;
+}
+
+#innerContent {
+    background-color: #181411;
 }

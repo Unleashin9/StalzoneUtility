@@ -10,6 +10,7 @@
 #include <QShowEvent>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QStackedWidget>
 
 SettingsWindow::SettingsWindow(QWidget* parent) : QWidget(parent)
 {
@@ -28,7 +29,7 @@ void SettingsWindow::setUserInfo(const UserInfo& info)
             .arg(m_userInfo.createdAt));
     }
     if (m_usernameLabel) {
-        m_usernameLabel->setText(m_userInfo.username); // <--- Обновляем имя в сайдбаре
+        m_usernameLabel->setText(m_userInfo.username);
     }
 }
 
@@ -99,7 +100,8 @@ void SettingsWindow::setupUi()
     sidebarLayout->setContentsMargins(15, 20, 15, 20);
     sidebarLayout->setSpacing(4);
 
-    auto createSidebarItem = [this, sidebar](const QString& text, const QString& iconName) -> QPushButton* {
+    // Хелпер: создаёт кнопку навигации с переключением страницы
+    auto createSidebarItem = [this, sidebar](const QString& text, const QString& iconName, int pageIndex, const QString& pageTitle) -> QPushButton* {
         auto* btn = new QPushButton(" " + text, sidebar);
         btn->setObjectName("sidebarItem");
         btn->setCheckable(true);
@@ -116,6 +118,12 @@ void SettingsWindow::setupUi()
         updateIcon(false);
         connect(btn, &QPushButton::toggled, btn, updateIcon);
 
+        // Переключение страницы и заголовка при клике
+        connect(btn, &QPushButton::clicked, this, [this, pageIndex, pageTitle]() {
+            if (m_pages) m_pages->setCurrentIndex(pageIndex);
+            if (m_pageTitleLabel) m_pageTitleLabel->setText(pageTitle);
+            });
+
         return btn;
         };
 
@@ -125,17 +133,17 @@ void SettingsWindow::setupUi()
     sidebarLayout->addWidget(accountLabel);
     sidebarLayout->addSpacing(4);
 
-    auto* overviewBtn = createSidebarItem("Обзор", "review");
-    overviewBtn->setChecked(true);
+    auto* overviewBtn = createSidebarItem("Обзор", "review", 0, "Информация об аккаунте");
+    overviewBtn->setChecked(true); // По умолчанию открыт Обзор
     sidebarLayout->addWidget(overviewBtn);
 
-    auto* securityBtn = createSidebarItem("Безопасность", "security");
+    auto* securityBtn = createSidebarItem("Безопасность", "security", 1, "Безопасность");
     sidebarLayout->addWidget(securityBtn);
 
-    auto* notificationsBtn = createSidebarItem("Уведомления", "notifications");
+    auto* notificationsBtn = createSidebarItem("Уведомления", "notifications", 2, "Уведомления");
     sidebarLayout->addWidget(notificationsBtn);
 
-    auto* partnershipBtn = createSidebarItem("Сотрудничество", "partnership");
+    auto* partnershipBtn = createSidebarItem("Сотрудничество", "partnership", 3, "Сотрудничество");
     sidebarLayout->addWidget(partnershipBtn);
 
     sidebarLayout->addSpacing(16);
@@ -146,10 +154,10 @@ void SettingsWindow::setupUi()
     sidebarLayout->addWidget(subscriptionLabel);
     sidebarLayout->addSpacing(4);
 
-    auto* subsBtn = createSidebarItem("Подписки", "subscriptions");
+    auto* subsBtn = createSidebarItem("Подписки", "subscriptions", 4, "Подписки");
     sidebarLayout->addWidget(subsBtn);
 
-    auto* balanceBtn = createSidebarItem("Баланс", "balance");
+    auto* balanceBtn = createSidebarItem("Баланс", "balance", 5, "Баланс");
     sidebarLayout->addWidget(balanceBtn);
 
     sidebarLayout->addSpacing(16);
@@ -160,11 +168,10 @@ void SettingsWindow::setupUi()
     sidebarLayout->addWidget(appLabel);
     sidebarLayout->addSpacing(4);
 
-    auto* settingsBtn = createSidebarItem("Настройки", "settings");
+    auto* settingsBtn = createSidebarItem("Настройки", "settings", 6, "Настройки приложения");
     sidebarLayout->addWidget(settingsBtn);
 
-    // --- НИЖНЯЯ ЧАСТЬ САЙДБАРА (АККАУНТ) ---
-    sidebarLayout->addStretch(); // Распирает всё, что выше, наверх
+    sidebarLayout->addStretch();
 
     auto* bottomAccountLabel = new QLabel("АККАУНТ", sidebar);
     bottomAccountLabel->setObjectName("sidebarSectionTitle");
@@ -177,13 +184,53 @@ void SettingsWindow::setupUi()
 
     middleLayout->addWidget(sidebar);
 
-    // --- КОНТЕНТ (пока пустой) ---
+    // =========================================================
+    // === ПРАВАЯ ЧАСТЬ (ЗАГОЛОВОК + СТРАНИЦЫ) ===
+    // =========================================================
     auto* contentWidget = new QWidget(this);
     contentWidget->setObjectName("settingsContent");
     auto* contentLayout = new QVBoxLayout(contentWidget);
-    contentLayout->setContentsMargins(20, 20, 20, 20);
-    contentLayout->setAlignment(Qt::AlignTop);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    contentLayout->setSpacing(0);
 
+    // --- ПАНЕЛЬ-ЗАГОЛОВОК СТРАНИЦЫ ---
+    auto* headerPanel = new QWidget(this);
+    headerPanel->setObjectName("contentHeaderPanel");
+    headerPanel->setFixedHeight(60);
+    headerPanel->setAttribute(Qt::WA_StyledBackground, true);
+
+    auto* headerPanelLayout = new QHBoxLayout(headerPanel);
+    headerPanelLayout->setContentsMargins(30, 0, 30, 0);
+
+    m_pageTitleLabel = new QLabel("Информация об аккаунте", headerPanel);
+    m_pageTitleLabel->setObjectName("pageTitle");
+
+    headerPanelLayout->addWidget(m_pageTitleLabel);
+    headerPanelLayout->addStretch(); // Убрали правый текст, прижали к левому краю
+
+    contentLayout->addWidget(headerPanel);
+
+    // --- СТОПКА СТРАНИЦ (QStackedWidget) ---
+    m_pages = new QStackedWidget(this);
+    m_pages->setObjectName("pagesStack");
+
+    // Страница 0: Обзор (информация об аккаунте)
+    auto* pageOverview = new QWidget();
+    pageOverview->setObjectName("innerContent");
+    auto* overviewLayout = new QVBoxLayout(pageOverview);
+    overviewLayout->setContentsMargins(30, 20, 30, 20);
+    overviewLayout->setAlignment(Qt::AlignTop);
+    // (Здесь потом добавим карточки с ID, датой и т.д.)
+    m_pages->addWidget(pageOverview);
+
+    // Страницы 1-6 (пока пустые заглушки, но готовы к наполнению)
+    for (int i = 1; i <= 6; ++i) {
+        auto* page = new QWidget();
+        page->setObjectName("innerContent");
+        m_pages->addWidget(page);
+    }
+
+    contentLayout->addWidget(m_pages, 1);
     middleLayout->addWidget(contentWidget, 1);
 
     mainLayout->addLayout(middleLayout, 1);

@@ -4,6 +4,7 @@
 
 class QLabel;
 class QPushButton;
+class QStackedWidget;
 
 class SettingsWindow : public QWidget
 {
@@ -23,6 +24,8 @@ private:
     void setupUi();
 
     QLabel* m_userInfoLabel = nullptr;
-    QLabel* m_usernameLabel = nullptr; // <--- НОВОЕ
+    QLabel* m_usernameLabel = nullptr;
+    QLabel* m_pageTitleLabel = nullptr;    // <--- НОВОЕ
+    QStackedWidget* m_pages = nullptr;     // <--- НОВОЕ
     UserInfo m_userInfo;
 };
