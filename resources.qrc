@@ -17,6 +17,7 @@
         <file>resources/icons/MainWindow/settings.svg</file>
         <file>resources/icons/MainWindow/logout.svg</file>
         <file>resources/icons/MainWindow/exitBtn.svg</file>
+		<file>resources/icons/MainWindow/auction.svg</file>
 
         <file>resources/icons/LoginWindow/profileBtn.svg</file>
         <file>resources/icons/LoginWindow/passwordEditOpen.svg</file>
@@ -39,5 +40,14 @@
 
 		<file>resources/icons/SettingsWindow/password.svg</file>
 		<file>resources/icons/SettingsWindow/exbo.svg</file>
+
+		<file>resources/icons/AuctionWindow/catalog.svg</file>
+		<file>resources/icons/AuctionWindow/monitoring.svg</file>
+		<file>resources/icons/AuctionWindow/resale.svg</file>
+		<file>resources/icons/AuctionWindow/search.svg</file>
+		<file>resources/icons/AuctionWindow/filter.svg</file>
+		<file>resources/icons/AuctionWindow/filterremove.svg</file>
+		<file>resources/icons/AuctionWindow/recently.svg</file>
+		<file>resources/icons/AuctionWindow/favourite.svg</file>
     </qresource>
 </RCC>

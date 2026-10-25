@@ -11,6 +11,13 @@ int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
+    // Отключаем системные анимации окон (устраняет мерцание при переключении)
+    QApplication::setEffectEnabled(Qt::UI_AnimateCombo, false);
+    QApplication::setEffectEnabled(Qt::UI_AnimateMenu, false);
+    QApplication::setEffectEnabled(Qt::UI_AnimateTooltip, false);
+    QApplication::setEffectEnabled(Qt::UI_FadeMenu, false);
+    QApplication::setEffectEnabled(Qt::UI_FadeTooltip, false);
+
     QApplication::setStyle("Fusion");
 
     QCoreApplication::setOrganizationName("STALZONE");

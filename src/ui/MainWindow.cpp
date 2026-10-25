@@ -17,6 +17,8 @@
 #include <QShortcut>
 #include <QMouseEvent>
 #include <QEvent>
+#include <QDesktopServices>
+#include <QUrl>
 
 #include "api/StalzoneAPI.h"
 #include "core/GameDatabase.h"
@@ -120,6 +122,9 @@ void MainWindow::setupUi()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
+    // =========================================================
+    // === ВЕРХНЯЯ ПАНЕЛЬ (TOPBAR) ===
+    // =========================================================
     auto* topBar = new QWidget(this);
     topBar->setObjectName("topBar");
     topBar->setFixedHeight(60);
@@ -132,9 +137,7 @@ void MainWindow::setupUi()
     auto* logoBtn = new QPushButton("STALZONE Utility", topBar);
     logoBtn->setObjectName("logoBtn");
     logoBtn->setIcon(ThemeManager::instance().getIcon(
-        "szutility",
-        ThemeManager::instance().accentColor(),
-        QString()));
+        "szutility", ThemeManager::instance().accentColor(), QString()));
     logoBtn->setIconSize(QSize(32, 32));
     logoBtn->setCursor(Qt::PointingHandCursor);
     logoBtn->setFlat(true);
@@ -172,32 +175,80 @@ void MainWindow::setupUi()
 
     mainLayout->addWidget(topBar);
 
+    // =========================================================
+    // === СРЕДНЯЯ ЗОНА (SIDEBAR + CONTENT) ===
+    // =========================================================
+    auto* middleLayout = new QHBoxLayout();
+    middleLayout->setContentsMargins(0, 0, 0, 0);
+    middleLayout->setSpacing(0);
+
+    // --- ЛЕВЫЙ САЙДБАР ---
+    auto* sidebar = new QWidget(this);
+    sidebar->setObjectName("mainSidebar");
+    sidebar->setFixedWidth(220);
+    sidebar->setAttribute(Qt::WA_StyledBackground, true);
+
+    auto* sidebarLayout = new QVBoxLayout(sidebar);
+    sidebarLayout->setContentsMargins(15, 20, 15, 20);
+    sidebarLayout->setSpacing(10);
+
+    auto* auctionBtn = new QPushButton(" Аукцион", sidebar);
+    auctionBtn->setObjectName("sidebarActionBtn"); // Специальный класс для акцентной кнопки
+    auctionBtn->setIcon(ThemeManager::instance().getIcon("auction", QColor("#000000"), "MainWindow"));
+    auctionBtn->setIconSize(QSize(20, 20));
+    auctionBtn->setCursor(Qt::PointingHandCursor);
+    auctionBtn->setMinimumHeight(44);
+    connect(auctionBtn, &QPushButton::clicked, this, &MainWindow::onAuctionClicked);
+
+    sidebarLayout->addWidget(auctionBtn);
+    sidebarLayout->addStretch();
+
+    middleLayout->addWidget(sidebar);
+
+    // --- ЦЕНТРАЛЬНЫЙ КОНТЕНТ ---
     auto* contentWidget = new QWidget(this);
+    contentWidget->setObjectName("mainContent");
     auto* contentLayout = new QVBoxLayout(contentWidget);
-    contentLayout->setContentsMargins(10, 10, 10, 10);
-    contentLayout->setSpacing(10);
+    contentLayout->setContentsMargins(20, 20, 20, 20);
+    contentLayout->setAlignment(Qt::AlignCenter);
 
-    auto* centerLayout = new QHBoxLayout();
-    centerLayout->setAlignment(Qt::AlignCenter);
+    auto* welcomeLabel = new QLabel("Добро пожаловать в STALZONE Utility!");
+    welcomeLabel->setStyleSheet("color: #A8998A; font-size: 24px; font-weight: bold;");
+    contentLayout->addWidget(welcomeLabel);
 
-    auto* bottomLayout = new QHBoxLayout();
-    bottomLayout->addStretch();
+    middleLayout->addWidget(contentWidget, 1); // 1 = растягивается
+    mainLayout->addLayout(middleLayout, 1);
 
-    auto* btnDiscord = new QToolButton(contentWidget);
-    btnDiscord->setObjectName("btnDiscord");
-    // ПУСТАЯ СТРОКА - ищем в корне resources/icons/
-    btnDiscord->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
-    btnDiscord->setIconSize(QSize(24, 24));
-    btnDiscord->setFixedSize(40, 40);
-    btnDiscord->setCursor(Qt::PointingHandCursor);
-    bottomLayout->addWidget(btnDiscord);
+    // =========================================================
+    // === НИЖНЯЯ ПАНЕЛЬ (BOTTOMBAR) ===
+    // =========================================================
+    auto* bottomBar = new QWidget(this);
+    bottomBar->setObjectName("bottomBar");
+    bottomBar->setFixedHeight(60);
+    bottomBar->setAttribute(Qt::WA_StyledBackground, true);
 
-    contentLayout->addStretch();
-    contentLayout->addLayout(centerLayout);
-    contentLayout->addStretch();
-    contentLayout->addLayout(bottomLayout);
+    auto* bottomBarLayout = new QHBoxLayout(bottomBar);
+    bottomBarLayout->setContentsMargins(50, 0, 50, 0);
+    bottomBarLayout->setSpacing(20);
 
-    mainLayout->addWidget(contentWidget);
+    auto* versionLabel = new QLabel("STALZONE Utility v0.1.0");
+    versionLabel->setStyleSheet("color: #A8998A; font-size: 12px;");
+
+    auto* discordBtn = new QToolButton(bottomBar);
+    discordBtn->setObjectName("btnDiscord");
+    discordBtn->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
+    discordBtn->setIconSize(QSize(24, 24));
+    discordBtn->setFixedSize(40, 40);
+    discordBtn->setCursor(Qt::PointingHandCursor);
+    connect(discordBtn, &QToolButton::clicked, this, []() {
+        QDesktopServices::openUrl(QUrl("https://discord.gg/zYsh9xPefd"));
+        });
+
+    bottomBarLayout->addWidget(versionLabel);
+    bottomBarLayout->addStretch();
+    bottomBarLayout->addWidget(discordBtn, 0, Qt::AlignVCenter);
+
+    mainLayout->addWidget(bottomBar);
 }
 
 void MainWindow::updateIcons()
@@ -408,9 +459,15 @@ void MainWindow::removeBlurEffect()
 
 void MainWindow::showSubWindow(QWidget* window)
 {
+    // 1. Показываем новое окно на весь экран
     window->showFullScreen();
     window->raise();
     window->activateWindow();
+
+    // 2. Даём Qt обработать события отрисовки, чтобы окно успело нарисоваться
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    // 3. Только после этого скрываем текущее
     hide();
 }
 
@@ -467,4 +524,5 @@ void MainWindow::onBackToMain()
     showFullScreen();
     raise();
     activateWindow();
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }

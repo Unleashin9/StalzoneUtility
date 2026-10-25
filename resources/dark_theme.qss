@@ -252,6 +252,10 @@ QPushButton#outlineButton:pressed { background-color: rgba(240, 169, 59, 0.2); }
     background-color: #181411;
 }
 
+#auctionContent {
+    background-color: #181411;
+}
+
 QPushButton#btnBack {
     background-color: transparent;
     color: #A8998A;
@@ -605,4 +609,152 @@ QPushButton#accentButton:pressed { background-color: #D6932F; }
 #methodRow {
     background: transparent;
     background-color: transparent;
+}
+
+/* ========================================================= */
+/* === 17. MAINWINDOW (САЙДБАР И BOTTOMBAR) ===             */
+/* ========================================================= */
+
+#mainSidebar {
+    background-color: #141110;
+    border-right: 1px solid #3A2F26;
+}
+
+#mainContent {
+    background-color: #181411;
+}
+
+/* Акцентная кнопка в сайдбаре (Аукцион) */
+QPushButton#sidebarActionBtn {
+    background-color: @accent@;
+    color: #181411; /* Черный текст */
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: left;
+    padding-left: 15px;
+}
+QPushButton#sidebarActionBtn:hover {
+    background-color: #F5BD6A;
+}
+QPushButton#sidebarActionBtn:pressed {
+    background-color: #D6932F;
+}
+
+/* Нижняя панель (Bottombar) */
+#bottomBar {
+    background-color: #1F1A16;
+    border: none;
+    border-top: 1px solid #3A2F26;
+    border-radius: 0;
+}
+
+/* ========================================================= */
+/* === 19. AUCTION WINDOW NAVIGATION ===                     */
+/* ========================================================= */
+
+/* Базовый вид кнопки (неактивная) */
+QPushButton#navBtn {
+    background: transparent;
+    color: #A8998A;
+    border: 1px solid transparent;
+    border-left: 3px solid transparent; /* Резервируем место под жирную полосу */
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: normal;
+    padding: 0px 12px;
+}
+
+/* При наведении */
+QPushButton#navBtn:hover {
+    background: rgba(245, 230, 211, 0.04);
+}
+
+/* Активное состояние (checked) */
+QPushButton#navBtn:checked {
+    color: @accent@;
+    border: 1px solid @accent@;
+    border-left: 3px solid @accent@; /* Жирная левая часть */
+    background: rgba(240, 169, 59, 0.08);
+    font-weight: bold;
+}
+
+/* ========================================================= */
+/* === 20. AUCTION WINDOW: CATALOG PAGE ===                  */
+/* ========================================================= */
+
+#quickAccessSidebar {
+    background-color: #141110;
+    border-right: 1px solid #3A2F26;
+}
+
+#quickAccessTitle {
+    color: #A8998A;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 0px 12px;
+    background: transparent;
+}
+
+#quickAccessBtn {
+    background: transparent;
+    color: #A8998A;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    text-align: left;
+    padding: 0px 12px;
+    font-size: 13px;
+    font-weight: normal;
+}
+#quickAccessBtn:hover {
+    background: rgba(245, 230, 211, 0.04);
+    color: #F5E6D3;
+}
+
+#rightTopBar {
+    background-color: #1F1A16;
+    border-bottom: 1px solid #3A2F26;
+    border-radius: 0;
+}
+
+#searchEdit {
+    background-color: #221C18;
+    color: #F5E6D3;
+    border: 1px solid #3A2F26;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+#searchEdit:focus {
+    border: 1px solid @accent@;
+}
+
+#filterBtn {
+    background-color: #221C18;
+    color: #A8998A;
+    border: 1px solid #3A2F26;
+    border-radius: 8px;
+    padding: 0px 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: normal;
+}
+#filterBtn:hover {
+    border: 1px solid @accent@;
+    color: @accent@;
+}
+#filterBtn:pressed {
+    background-color: #181411;
+}
+
+#dropdownPopup {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 10px;
+}
+
+#catalogContent {
+    background-color: #181411;
 }
