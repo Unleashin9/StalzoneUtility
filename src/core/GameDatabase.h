@@ -1,13 +1,21 @@
 ﻿#pragma once
-
 #include <QObject>
 #include <QHash>
 #include <QMap>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QString>
+#include <QVector>
 
 class QNetworkAccessManager;
+
+struct ItemData {
+    QString id;
+    QString name;
+    QString category;
+    QString iconPath; // <--- НОВОЕ: путь к иконке (например, "/icons/artefact/...")
+    QString color;    // <--- НОВОЕ: цвет редкости (например, "RANK_MASTER")
+};
 
 class GameDatabase : public QObject
 {
@@ -17,17 +25,14 @@ public:
     explicit GameDatabase(QObject* parent = nullptr);
 
     void load();
+    void reload();
 
-    // Получить русское название предмета по ID
     QString itemName(const QString& id) const;
-
-    // Получить все рецепты бартера
     QJsonArray barterRecipes() const;
-
-    // НОВОЕ: Получить список всех предметов (ID -> Название)
     QMap<QString, QString> allItems() const;
-
     bool isLoaded() const { return m_loaded; }
+
+    QVector<ItemData> itemsByGroup(const QString& groupName) const;
 
 signals:
     void loaded();
@@ -39,6 +44,9 @@ private:
 
     QNetworkAccessManager* m_networkManager;
     QHash<QString, QString> m_itemNames;
+    QHash<QString, QString> m_itemCategories;
+    QHash<QString, QString> m_itemIconPaths; // <--- НОВОЕ
+    QHash<QString, QString> m_itemColors;    // <--- НОВОЕ
     QJsonArray m_barterRecipes;
     bool m_loaded = false;
     int m_pendingRequests = 0;

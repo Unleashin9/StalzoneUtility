@@ -1,5 +1,4 @@
 ﻿#include "GameDatabase.h"
-
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -57,21 +56,40 @@ void GameDatabase::load()
         });
 }
 
+void GameDatabase::reload()
+{
+    m_loaded = false;
+    m_itemNames.clear();
+    m_itemCategories.clear();
+    m_itemIconPaths.clear();
+    m_itemColors.clear();
+    m_barterRecipes = QJsonArray();
+    load();
+}
+
 void GameDatabase::parseListing(const QJsonArray& array)
 {
     m_itemNames.clear();
+    m_itemCategories.clear();
+    m_itemIconPaths.clear();
+    m_itemColors.clear();
+
     for (const QJsonValue& val : array) {
         QJsonObject obj = val.toObject();
-        QString dataPath = obj["data"].toString();
+        QString dataPath = obj["data"].toString(); // например, "/items/artefact/..."
+        QString iconPath = obj["icon"].toString();   // например, "/icons/artefact/..."
+        QString nameRu = obj["name"].toObject()["lines"].toObject()["ru"].toString();
+        QString color = obj["color"].toString();     // например, "RANK_MASTER"
 
         QStringList parts = dataPath.split('/');
-        if (parts.size() >= 2) {
+        if (parts.size() >= 3) {
             QString fileName = parts.last();
             QString id = fileName.split('.').first();
-
-            QString nameRu = obj["name"].toObject()["lines"].toObject()["ru"].toString();
             if (!id.isEmpty() && !nameRu.isEmpty()) {
                 m_itemNames[id] = nameRu;
+                m_itemCategories[id] = parts[2]; // "artefact", "weapon" и т.д.
+                m_itemIconPaths[id] = iconPath;
+                m_itemColors[id] = color;
             }
         }
     }
@@ -94,7 +112,6 @@ QJsonArray GameDatabase::barterRecipes() const
     return m_barterRecipes;
 }
 
-// НОВОЕ: Реализация метода получения всех предметов
 QMap<QString, QString> GameDatabase::allItems() const
 {
     QMap<QString, QString> sortedMap;
@@ -102,4 +119,37 @@ QMap<QString, QString> GameDatabase::allItems() const
         sortedMap.insert(it.key(), it.value());
     }
     return sortedMap;
+}
+
+QVector<ItemData> GameDatabase::itemsByGroup(const QString& groupName) const
+{
+    QVector<ItemData> result;
+    for (auto it = m_itemNames.begin(); it != m_itemNames.end(); ++it) {
+        const QString& id = it.key();
+        const QString& name = it.value();
+        QString cat = m_itemCategories.value(id);
+
+        bool matches = false;
+        if (groupName == "all") matches = true;
+        else if (groupName == "weapon") matches = (cat == "weapon" || cat == "device");
+        else if (groupName == "armor") matches = (cat == "armor");
+        else if (groupName == "containers") matches = (cat == "containers" || cat == "backpacks");
+        else if (groupName == "artefact") matches = (cat == "artefact");
+        else if (groupName == "attachment") matches = (cat == "attachment" || cat == "weapon_modules");
+        else if (groupName == "bullet") matches = (cat == "bullet" || cat == "grenade");
+        else if (groupName == "medicine") matches = (cat == "medicine" || cat == "supply");
+        else if (groupName == "misc") matches = (cat == "misc");
+        else if (groupName == "other") matches = (cat == "other");
+
+        if (matches) {
+            result.append({
+                id,
+                name,
+                cat,
+                m_itemIconPaths.value(id),
+                m_itemColors.value(id)
+                });
+        }
+    }
+    return result;
 }
