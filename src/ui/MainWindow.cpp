@@ -112,11 +112,12 @@ void MainWindow::setupUi()
     central->setObjectName("mainContainer");
     setCentralWidget(central);
 
+    // ГЛАВНЫЙ ВЕРТИКАЛЬНЫЙ СЛОЙ (TopBar -> Контент -> BottomBar)
     auto* mainLayout = new QVBoxLayout(central);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // === ВЕРХНЯЯ ПАНЕЛЬ ===
+    // === 1. ВЕРХНЯЯ ПАНЕЛЬ ===
     auto* topBar = new QWidget(this);
     topBar->setObjectName("topBar");
     topBar->setFixedHeight(60);
@@ -135,16 +136,6 @@ void MainWindow::setupUi()
     logoBtn->setFocusPolicy(Qt::NoFocus);
     logoBtn->setStyleSheet("background: transparent; border: none;");
     connect(logoBtn, &QPushButton::clicked, this, &MainWindow::onBackToMain);
-
-    // Кнопка "Аукцион" в шапке
-    auto* auctionNavBtn = new QPushButton(" Аукцион", topBar);
-    auctionNavBtn->setObjectName("mainAuctionNavBtn");
-    auctionNavBtn->setIcon(ThemeManager::instance().getIcon("catalog", QColor("#A8998A"), "AuctionWindow"));
-    auctionNavBtn->setIconSize(QSize(20, 20));
-    auctionNavBtn->setCursor(Qt::PointingHandCursor);
-    auctionNavBtn->setMinimumHeight(40);
-    auctionNavBtn->setMinimumWidth(150);
-    connect(auctionNavBtn, &QPushButton::clicked, this, &MainWindow::onAuctionClicked);
 
     auto* btnWidget = new QWidget(topBar);
     auto* btnLayout = new QHBoxLayout(btnWidget);
@@ -171,13 +162,41 @@ void MainWindow::setupUi()
     btnLayout->addWidget(btnExit);
 
     topBarLayout->addWidget(logoBtn, 0, Qt::AlignVCenter);
-    topBarLayout->addWidget(auctionNavBtn, 0, Qt::AlignVCenter);
     topBarLayout->addStretch();
     topBarLayout->addWidget(btnWidget, 0, Qt::AlignVCenter);
 
     mainLayout->addWidget(topBar);
 
-    // === ЦЕНТРАЛЬНАЯ ЧАСТЬ ===
+    // === 2. СРЕДНЯЯ ЧАСТЬ (Sidebar + Контент) ===
+    auto* middleWidget = new QWidget(this);
+    auto* middleLayout = new QHBoxLayout(middleWidget);
+    middleLayout->setContentsMargins(0, 0, 0, 0);
+    middleLayout->setSpacing(0);
+
+    // --- Левый Sidebar ---
+    auto* sidebar = new QWidget(this);
+    sidebar->setObjectName("mainSidebar");
+    sidebar->setFixedWidth(240);
+    sidebar->setAttribute(Qt::WA_StyledBackground, true);
+
+    auto* sidebarLayout = new QVBoxLayout(sidebar);
+    sidebarLayout->setContentsMargins(15, 20, 15, 20);
+    sidebarLayout->setSpacing(4);
+
+    auto* auctionBtn = new QPushButton(" Аукцион", sidebar);
+    auctionBtn->setObjectName("mainSidebarBtn");
+    auctionBtn->setIcon(ThemeManager::instance().getIcon("auction", QColor("#A8998A"), "MainWindow"));
+    auctionBtn->setIconSize(QSize(18, 18));
+    auctionBtn->setCursor(Qt::PointingHandCursor);
+    auctionBtn->setMinimumHeight(40);
+    connect(auctionBtn, &QPushButton::clicked, this, &MainWindow::onAuctionClicked);
+
+    sidebarLayout->addWidget(auctionBtn);
+    sidebarLayout->addStretch(); // Прижимаем кнопки к верху
+
+    middleLayout->addWidget(sidebar);
+
+    // --- Правая часть (Контент) ---
     auto* contentWidget = new QWidget(this);
     auto* contentLayout = new QVBoxLayout(contentWidget);
     contentLayout->setContentsMargins(20, 20, 20, 20);
@@ -189,9 +208,11 @@ void MainWindow::setupUi()
     welcomeLabel->setAlignment(Qt::AlignCenter);
     contentLayout->addWidget(welcomeLabel);
 
-    mainLayout->addWidget(contentWidget, 1);
+    middleLayout->addWidget(contentWidget, 1);
 
-    // === НИЖНЯЯ ПАНЕЛЬ ===
+    mainLayout->addWidget(middleWidget, 1);
+
+    // === 3. НИЖНЯЯ ПАНЕЛЬ ===
     auto* bottomBar = new QWidget(this);
     bottomBar->setObjectName("bottomBar");
     bottomBar->setFixedHeight(60);
@@ -206,7 +227,6 @@ void MainWindow::setupUi()
 
     auto* btnDiscord = new QToolButton(bottomBar);
     btnDiscord->setObjectName("btnDiscord");
-    // ИСПРАВЛЕНО: "discord", пустая папка
     btnDiscord->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
     btnDiscord->setIconSize(QSize(24, 24));
     btnDiscord->setFixedSize(40, 40);
@@ -227,6 +247,10 @@ void MainWindow::updateIcons()
     if (auto* logo = findChild<QPushButton*>("logoBtn")) {
         logo->setIcon(ThemeManager::instance().getIcon("szutility", accent, QString()));
     }
+    if (auto* auctionSidebarBtn = findChild<QPushButton*>("mainSidebarBtn")) {
+        // Цвет иконки аукциона в сайдбаре всегда серый (не зависит от темы), но перекрасим на всякий случай
+        auctionSidebarBtn->setIcon(ThemeManager::instance().getIcon("auction", QColor("#A8998A"), "MainWindow"));
+    }
     if (m_profileBtn) {
         m_profileBtn->setIcon(ThemeManager::instance().getIcon(
             m_currentUser.isEmpty() ? "profileBtnOff" : "profileBtnOn", iconColor, "MainWindow"));
@@ -235,7 +259,6 @@ void MainWindow::updateIcons()
         exitBtn->setIcon(ThemeManager::instance().getIcon("exitBtn", iconColor, "MainWindow"));
     }
     if (auto* discordBtn = findChild<QToolButton*>("btnDiscord")) {
-        // ИСПРАВЛЕНО: "discord", пустая папка
         discordBtn->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
     }
 }

@@ -90,20 +90,44 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     outline: none;
 }
 
-#mainContainer #mainAuctionNavBtn {
+#mainContainer #mainSidebar {
+    background-color: #1F1A16;
+    border-right: 1px solid #3A2F26;
+}
+
+#mainContainer #sidebarSectionTitle {
+    color: #A8998A;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+#mainContainer #mainSidebar {
+    background-color: #1F1A16;
+    border-right: 1px solid #3A2F26;
+}
+
+#mainContainer #mainSidebarBtn {
     background-color: transparent;
     color: #A8998A;
-    border: 1px solid #3A2F26;
+    border: 1px solid transparent;
+    border-left: 4px solid transparent;
     border-radius: 6px;
+    text-align: left;
+    padding-left: 7px;
+    font-size: 14px;
     font-weight: 600;
-    font-size: 15px;
-    padding: 0px 18px;
-    text-align: center;
 }
-#mainContainer #mainAuctionNavBtn:hover {
+#mainContainer #mainSidebarBtn:hover {
     background-color: rgba(245, 230, 211, 0.05);
     color: #F5E6D3;
-    border: 1px solid #4A3F36;
+    border-left: 4px solid transparent;
+}
+#mainContainer #mainSidebarBtn:checked {
+    background-color: rgba(240, 169, 59, 0.05);
+    color: @accent@;
+    border: 1px solid @accent@;
+    border-left: 4px solid @accent@;
 }
 
 #mainContainer #btnLogin {
