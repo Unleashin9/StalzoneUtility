@@ -1,29 +1,12 @@
 ﻿/* ========================================================= */
-/* === ПАЛИТРА (справочник) ===                              */
-/*                                                           */
-/*   ФОН И ПОВЕРХНОСТИ                                       */
-/*     #1E1E1E ........ фон окна / основной                  */
-/*     #252525 ........ alternate-row                        */
-/*     #2D2D2D ........ поля ввода, карточки                 */
-/*     #333333 ........ hover карточек                       */
-/*                                                           */
-/*   ТЕКСТ И РАМКИ                                           */
-/*     #FFFFFF ........ основной текст                       */
-/*     #9CA3AF ........ приглушённый                         */
-/*     #4B5563 ........ рамки, разделители                   */
-/*                                                           */
-/*   АКЦЕНТ (подставляется из ThemeManager)                  */
-/*     @accent@ ....... основной акцент                      */
-/*                                                           */
-/*   ОПАСНОСТЬ                                               */
-/*     #F87171 ........ основной                             */
-/*     #FCA5A5 ........ hover                                */
-/*     #EF4444 ........ pressed                              */
-/*                                                           */
-/*   БРЕНДЫ                                                  */
-/*     #5865F2 ........ Discord                              */
-/*     #7983F5 ........ Discord hover                        */
-/*     #4752C4 ........ Discord pressed                      */
+/* === 1. ПАЛИТРА (справочник) ===                           */
+/* ========================================================= */
+/*   ФОН:           #1E1E1E (основной), #252525 (alternate), */
+/*                  #2D2D2D (поля/карточки), #333333 (hover) */
+/*   ТЕКСТ:         #FFFFFF, #9CA3AF, #4B5563 (рамки)        */
+/*   АКЦЕНТ:        @accent@ (из ThemeManager)               */
+/*   ОПАСНОСТЬ:     #F87171 / #FCA5A5 / #EF4444              */
+/*   BRANDS:        #5865F2 / #7983F5 / #4752C4 (Discord)    */
 /* ========================================================= */
 
 /* ========================================================= */
@@ -33,7 +16,7 @@
 QWidget {
     background-color: #1E1E1E;
     color: #FFFFFF;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
     font-size: 14px;
 }
 
@@ -62,13 +45,38 @@ QPushButton:disabled {
 }
 
 /* ========================================================= */
-/* === 3. MAINWINDOW (ДАШБОРД) ===                          */
+/* === 3. MAINWINDOW ===                                     */
 /* ========================================================= */
 
 #mainContainer {
     background-color: #1E1E1E;
     border: none;
     border-radius: 0px;
+}
+
+/* Логотип-кнопка (левый верхний угол) — АБСОЛЮТНО СТАТИЧНАЯ */
+#logoBtn {
+    background: transparent;
+    background-color: transparent;
+    color: #FFFFFF;
+    border: none;
+    outline: none;
+    border-radius: 0;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: left;
+    padding: 6px 12px 6px 8px;
+    min-height: 44px;
+}
+#logoBtn:hover,
+#logoBtn:pressed,
+#logoBtn:focus,
+#logoBtn:default {
+    background: transparent;
+    background-color: transparent;
+    color: #FFFFFF;
+    border: none;
+    outline: none;
 }
 
 #appTitle {
@@ -91,6 +99,7 @@ QPushButton:disabled {
     font-weight: bold;
     text-align: center;
     padding-left: 15px;
+    padding-right: 15px;
 }
 #btnLogin:hover   { background-color: #BEF264; }
 #btnLogin:pressed { background-color: #84CC16; }
@@ -134,17 +143,15 @@ QPushButton#btnItemsCard:hover {
 }
 
 /* ========================================================= */
-/* === 4. ДИАЛОГИ АВТОРИЗАЦИИ (LOGIN / REGISTER) ===        */
+/* === 4. ДИАЛОГИ АВТОРИЗАЦИИ (LOGIN / REGISTER) ===         */
 /* ========================================================= */
 
-/* Карточка диалога */
 #dialogContainer {
     background-color: #1E1E1E;
     border-radius: 15px;
     border: 1px solid #4B5563;
 }
 
-/* Заголовки */
 #dialogContainer #loginTitle {
     font-size: 24px;
     font-weight: bold;
@@ -155,14 +162,12 @@ QPushButton#btnItemsCard:hover {
     color: #9CA3AF;
 }
 
-/* Подписи над полями */
 #dialogContainer #inputLabel {
     font-size: 12px;
     font-weight: bold;
     color: #9CA3AF;
 }
 
-/* Разделитель */
 #dialogContainer #dividerLine {
     color: #333333;
     background-color: #333333;
@@ -172,7 +177,6 @@ QPushButton#btnItemsCard:hover {
     margin-bottom: 5px;
 }
 
-/* Кнопка-ссылка "Забыли пароль?" */
 #dialogContainer #linkButton {
     background-color: transparent;
     color: @accent@;
@@ -187,7 +191,6 @@ QPushButton#btnItemsCard:hover {
     text-decoration: underline;
 }
 
-/* Главная кнопка формы */
 #dialogContainer #loginSubmitBtn {
     background-color: @accent@;
     color: #000000;
@@ -198,7 +201,6 @@ QPushButton#btnItemsCard:hover {
 #dialogContainer #loginSubmitBtn:hover   { background-color: #BEF264; }
 #dialogContainer #loginSubmitBtn:pressed { background-color: #84CC16; }
 
-/* Контурная кнопка ("Создать аккаунт" / "Войти") */
 #dialogContainer #outlineButton {
     background-color: transparent;
     border: 1px solid @accent@;
@@ -211,7 +213,6 @@ QPushButton#btnItemsCard:hover {
 #dialogContainer #outlineButton:hover   { background-color: rgba(163, 230, 53, 0.1); }
 #dialogContainer #outlineButton:pressed { background-color: rgba(163, 230, 53, 0.2); }
 
-/* Поля ввода в диалогах */
 #dialogContainer QLineEdit {
     background-color: #2D2D2D;
     color: #FFFFFF;
@@ -223,7 +224,6 @@ QPushButton#btnItemsCard:hover {
     border: 1px solid @accent@;
 }
 
-/* Иконка "глазик" внутри поля пароля */
 #dialogContainer QLineEdit QToolButton {
     background-color: transparent;
     border: none;
@@ -235,7 +235,6 @@ QPushButton#btnItemsCard:hover {
     border-radius: 4px;
 }
 
-/* Чекбокс «Запомнить меня» */
 #dialogContainer QCheckBox {
     color: #FFFFFF;
     font-size: 13px;
@@ -258,15 +257,13 @@ QPushButton#btnItemsCard:hover {
 }
 
 /* ========================================================= */
-/* === 5. ОБЩИЕ ЭЛЕМЕНТЫ ===                                */
+/* === 5. ОБЩИЕ ЭЛЕМЕНТЫ ===                                 */
 /* ========================================================= */
 
-/* Фон под-окон */
 #auctionRoot, #barterRoot, #itemsRoot {
     background-color: #1E1E1E;
 }
 
-/* Кнопка "На главную" */
 QPushButton#btnBack {
     background-color: transparent;
     color: #9CA3AF;
@@ -280,7 +277,6 @@ QPushButton#btnBack:hover {
     color: @accent@;
 }
 
-/* Таблицы */
 QTableWidget {
     background-color: #1E1E1E;
     alternate-background-color: #252525;
@@ -296,7 +292,6 @@ QTableWidget::item {
     border: none;
 }
 
-/* Заголовки колонок */
 QHeaderView::section {
     background-color: #2D2D2D;
     color: #9CA3AF;
@@ -307,7 +302,6 @@ QHeaderView::section {
     border-bottom: 1px solid #4B5563;
 }
 
-/* Выпадающие списки и поля ввода вне диалогов */
 QComboBox, QLineEdit {
     background-color: #2D2D2D;
     color: #FFFFFF;
@@ -324,7 +318,6 @@ QComboBox::drop-down {
     width: 24px;
 }
 
-/* Скроллбары */
 QScrollBar:vertical {
     background: transparent;
     width: 10px;
@@ -343,7 +336,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 /* ========================================================= */
-/* === 6. УВЕДОМЛЕНИЯ (TOAST) ===                           */
+/* === 6. УВЕДОМЛЕНИЯ (TOAST) ===                            */
 /* ========================================================= */
 
 #toastError {
@@ -355,7 +348,6 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     font-weight: bold;
     font-size: 13px;
 }
-
 #toastSuccess {
     background-color: rgba(45, 45, 45, 0.95);
     color: @accent@;
@@ -367,7 +359,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 /* ========================================================= */
-/* === 7. ПАНЕЛЬ ТРЕБОВАНИЙ (RegisterWindow) ===            */
+/* === 7. ПАНЕЛЬ ТРЕБОВАНИЙ ===                              */
 /* ========================================================= */
 
 #requirementsContainer {
@@ -383,7 +375,7 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 }
 
 /* ========================================================= */
-/* === 8. МЕНЮ ПРОФИЛЯ ===                                  */
+/* === 8. МЕНЮ ПРОФИЛЯ ===                                   */
 /* ========================================================= */
 
 #profileMenu {
@@ -402,12 +394,10 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     font-size: 13px;
     font-weight: normal;
 }
-
 #profileMenuItem:hover {
     background-color: #333333;
     color: @accent@;
 }
-
 #profileMenuItem:pressed {
     background-color: #2D2D2D;
 }

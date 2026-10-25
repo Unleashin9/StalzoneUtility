@@ -1,24 +1,55 @@
 ﻿#include <QApplication>
+#include <QFont>
+#include <QFontDatabase>
+#include <QDirIterator>
+#include <QDebug>
+
 #include "ui/MainWindow.h"
 #include "core/ThemeManager.h"
-#include <QDebug>
 
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
-    // Принудительно используем Fusion (лучше дружит с QSS)
     QApplication::setStyle("Fusion");
 
     QCoreApplication::setOrganizationName("STALZONE");
     QCoreApplication::setApplicationName("Utility");
     QCoreApplication::setApplicationVersion("0.1.0");
 
-    // Устанавливаем темную тему
+    // === ЗАГРУЗКА ВСЕХ ШРИФТОВ ИЗ resources/fonts/ ===
+    int loadedCount = 0;
+    QDirIterator it(":/resources/fonts", { "*.ttf", "*.otf" }, QDir::Files);
+    while (it.hasNext()) {
+        const QString fontPath = it.next();
+        const int fontId = QFontDatabase::addApplicationFont(fontPath);
+        if (fontId != -1) {
+            const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+            for (const QString& family : families) {
+                qDebug() << "Loaded font:" << family << "from" << fontPath;
+            }
+            ++loadedCount;
+        }
+        else {
+            qWarning() << "Failed to load font:" << fontPath;
+        }
+    }
+    qDebug() << "Total font files loaded:" << loadedCount;
+
+    // === УСТАНАВЛИВАЕМ IBM PLEX SANS ГЛОБАЛЬНО ===
+    QFont appFont("IBM Plex Sans");
+    appFont.setPointSize(10);
+    app.setFont(appFont);
+
+    // Проверка: реально ли шрифт применён
+    qDebug() << "App font family:" << app.font().family()
+        << "exact match:" << QFontInfo(app.font()).family();
+
+    // === ТЕМА ===
     ThemeManager::instance().setTheme(ThemeManager::ThemeType::Dark);
 
     MainWindow window;
-    window.showFullScreen(); // <--- ВКЛЮЧАЕМ ПОЛНЫЙ ЭКРАН
+    window.showFullScreen();
 
     return app.exec();
 }

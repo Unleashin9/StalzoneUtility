@@ -34,7 +34,10 @@ QColor ThemeManager::accentColor() const
 
 QIcon ThemeManager::getIcon(const QString& iconName, const QColor& color, const QString& folder) const
 {
-    const QString path = QStringLiteral(":/resources/icons/%1/%2.svg").arg(folder, iconName);
+    // Поддерживаем пустую папку (иконка лежит в корне resources/icons/)
+    const QString path = folder.isEmpty()
+        ? QStringLiteral(":/resources/icons/%1.svg").arg(iconName)
+        : QStringLiteral(":/resources/icons/%1/%2.svg").arg(folder, iconName);
 
     QSvgRenderer renderer(path);
     if (!renderer.isValid()) {
@@ -60,20 +63,21 @@ QIcon ThemeManager::getIcon(const QString& iconName, const QColor& color, const 
 
 QString ThemeManager::iconAsTempFile(const QString& iconName, const QColor& color, const QString& folder) const
 {
-    // Папка кэша (создается один раз)
     QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/stalzone_icons";
     QDir().mkpath(cacheDir);
 
-    QString fileName = QString("%1_%2_%3.png").arg(folder, iconName, color.name().mid(1));
+    QString prefix = folder.isEmpty() ? QStringLiteral("root") : folder;
+    QString fileName = QString("%1_%2_%3.png").arg(prefix, iconName, color.name().mid(1));
     QString filePath = cacheDir + "/" + fileName;
 
-    // Если файл уже есть — переиспользуем
     if (QFile::exists(filePath)) {
-        // Возвращаем путь с forward slashes (Qt QSS этого ожидает)
         return QString(filePath).replace('\\', '/');
     }
 
-    const QString resourcePath = QStringLiteral(":/resources/icons/%1/%2.svg").arg(folder, iconName);
+    const QString resourcePath = folder.isEmpty()
+        ? QStringLiteral(":/resources/icons/%1.svg").arg(iconName)
+        : QStringLiteral(":/resources/icons/%1/%2.svg").arg(folder, iconName);
+
     QSvgRenderer renderer(resourcePath);
     if (!renderer.isValid()) {
         qWarning() << "SVG not found or invalid:" << resourcePath;
@@ -127,7 +131,6 @@ void ThemeManager::applyStyleSheet()
     if (style.startsWith(QChar(0xFEFF)))
         style.remove(0, 1);
 
-    // === ПОДСТАНОВКА ПЕРЕМЕННЫХ ТЕМЫ ===
     QColor accent = accentColor();
     style.replace("@accent@", accent.name());
 
@@ -136,8 +139,6 @@ void ThemeManager::applyStyleSheet()
         style.replace("@rememberMeIcon@", rememberMeIcon);
     }
     else {
-        // Fallback: если иконка не сгенерировалась, ставим акцентный цвет на фон
-        // (визуально индикатор будет залит цветом, что тоже читается)
         style.replace("@rememberMeIcon@", QStringLiteral(":/resources/icons/LoginWindow/rememberMe.svg"));
     }
 

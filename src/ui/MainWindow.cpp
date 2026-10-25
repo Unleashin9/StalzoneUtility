@@ -49,7 +49,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     setupUi();
 
-    // Создаём меню профиля после setupUi, чтобы m_profileBtn был готов
     m_profileMenu = new ProfileMenu(this);
 
     connect(m_profileMenu, &ProfileMenu::settingsUserClicked, this, [this]() {
@@ -65,7 +64,6 @@ MainWindow::MainWindow(QWidget* parent)
         onLogout();
         });
 
-    // Esc — скрыть меню, если открыто
     auto* escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
     connect(escShortcut, &QShortcut::activated, this, [this]() {
         if (m_profileMenu && m_profileMenu->isVisible()) {
@@ -73,7 +71,6 @@ MainWindow::MainWindow(QWidget* parent)
         }
         });
 
-    // Клик вне меню — скрыть
     qApp->installEventFilter(this);
 
     connect(m_loginWindow, &LoginWindow::loginSuccessful, this, &MainWindow::onLoginSuccess);
@@ -125,16 +122,20 @@ void MainWindow::setupUi()
 
     // === ВЕРХНЯЯ ПАНЕЛЬ ===
     auto* topLayout = new QHBoxLayout();
-    auto* titleLayout = new QVBoxLayout();
-    titleLayout->setSpacing(2);
 
-    auto* appTitle = new QLabel("STALZONE Utility", this);
-    appTitle->setObjectName("appTitle");
-    auto* appSubtitle = new QLabel("Твой цифровой артефакт и помощник", this);
-    appSubtitle->setObjectName("appSubtitle");
-
-    titleLayout->addWidget(appTitle);
-    titleLayout->addWidget(appSubtitle);
+    // Логотип-кнопка
+    auto* logoBtn = new QPushButton("STALZONE Utility", this);
+    logoBtn->setObjectName("logoBtn");
+    logoBtn->setIcon(ThemeManager::instance().getIcon(
+        "szutility",
+        ThemeManager::instance().accentColor(),
+        QString()));
+    logoBtn->setIconSize(QSize(32, 32));
+    logoBtn->setCursor(Qt::PointingHandCursor);
+    logoBtn->setFlat(true);                      // Убирает 3D-эффект кнопки
+    logoBtn->setFocusPolicy(Qt::NoFocus);        // Никогда не получает фокус
+    logoBtn->setStyleSheet("background: transparent; border: none;"); // Страховка
+    connect(logoBtn, &QPushButton::clicked, this, &MainWindow::onBackToMain);
 
     auto* btnLayout = new QHBoxLayout();
     btnLayout->setSpacing(15);
@@ -160,7 +161,7 @@ void MainWindow::setupUi()
     btnLayout->addWidget(m_profileBtn);
     btnLayout->addWidget(btnExit);
 
-    topLayout->addLayout(titleLayout);
+    topLayout->addWidget(logoBtn, 0, Qt::AlignVCenter);
     topLayout->addStretch();
     topLayout->addLayout(btnLayout);
 
@@ -233,7 +234,6 @@ void MainWindow::showProfileMenu()
 {
     if (!m_profileMenu || !m_profileBtn) return;
 
-    // Сначала показываем меню, чтобы Qt применила QSS и посчитала финальный размер
     m_profileMenu->show();
     m_profileMenu->raise();
     m_profileMenu->adjustSize();
@@ -241,38 +241,21 @@ void MainWindow::showProfileMenu()
     int menuWidth = m_profileMenu->width();
     int menuHeight = m_profileMenu->height();
 
-    // Точка (центр нижней грани кнопки) в глобальных координатах
     QPoint globalAnchor = m_profileBtn->mapToGlobal(
         QPoint(m_profileBtn->width() / 2, m_profileBtn->height()));
-
-    // Переводим в координаты MainWindow
     QPoint localAnchor = mapFromGlobal(globalAnchor);
 
-    // Верхний левый угол меню: по центру кнопки
     int x = localAnchor.x() - menuWidth / 2;
     int y = localAnchor.y() + 8;
 
-    // Ограничиваем по границам окна
     if (x < 10) x = 10;
     if (x + menuWidth > width() - 10) x = width() - menuWidth - 10;
     if (y + menuHeight > height() - 10) y = height() - menuHeight - 10;
 
     QPoint endPos(x, y);
     QPoint startPos(x, y - 8);
-
-    // Резкое перемещение в стартовую позицию, чтобы не было «прыжка»
     m_profileMenu->move(startPos);
 
-    // Диагностика (потом уберём)
-    qDebug() << "=== PROFILE MENU DEBUG ===";
-    qDebug() << "Btn width:" << m_profileBtn->width() << "Btn x:" << m_profileBtn->x();
-    qDebug() << "Global anchor:" << globalAnchor;
-    qDebug() << "Local anchor:" << localAnchor;
-    qDebug() << "Menu size:" << menuWidth << "x" << menuHeight;
-    qDebug() << "MainWindow size:" << width() << "x" << height();
-    qDebug() << "Final pos:" << endPos;
-
-    // Анимация позиции
     auto* posAnim = new QPropertyAnimation(m_profileMenu, "pos", m_profileMenu);
     posAnim->setDuration(200);
     posAnim->setStartValue(startPos);
@@ -280,7 +263,6 @@ void MainWindow::showProfileMenu()
     posAnim->setEasingCurve(QEasingCurve::OutCubic);
     posAnim->start(QAbstractAnimation::DeleteWhenStopped);
 
-    // Анимация прозрачности
     auto* effect = new QGraphicsOpacityEffect(m_profileMenu);
     effect->setOpacity(0.0);
     m_profileMenu->setGraphicsEffect(effect);
@@ -401,7 +383,7 @@ void MainWindow::onShowLoginWindow()
     m_loginWindow->show();
     m_loginWindow->raise();
     m_loginWindow->activateWindow();
-    m_registerWindow->setFocus();
+    m_loginWindow->setFocus();
 }
 
 void MainWindow::onLogout()
