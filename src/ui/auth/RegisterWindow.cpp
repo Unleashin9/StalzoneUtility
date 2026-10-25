@@ -18,14 +18,16 @@
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QKeyEvent>
+#include <QDebug> // <--- для диагностики
 
 RegisterWindow::RegisterWindow(QWidget* parent) : QDialog(parent)
 {
     setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setFixedWidth(420);
-    setFocusPolicy(Qt::StrongFocus); // <--- явно разрешаем фокус
+    setFocusPolicy(Qt::StrongFocus);
 
+    // Создаём панель требований
     m_reqPanel = new RequirementsPanel(this);
     m_reqPanel->hide();
 
@@ -56,7 +58,10 @@ void RegisterWindow::setupUi()
     auto* headerLayout = new QHBoxLayout();
     headerLayout->setSpacing(15);
     auto* iconLabel = new QLabel(container);
-    QIcon registerIcon = ThemeManager::instance().getIcon("registerBtn", QColor("#A3E635"), "RegisterWindow");
+    QIcon registerIcon = ThemeManager::instance().getIcon(
+        "registerBtn",
+        ThemeManager::instance().accentColor(),
+        "RegisterWindow");
     if (!registerIcon.isNull()) iconLabel->setPixmap(registerIcon.pixmap(48, 48));
     headerLayout->addWidget(iconLabel);
 
@@ -103,11 +108,13 @@ void RegisterWindow::setupUi()
         connect(m_togglePassAction, &QAction::triggered, this, [this]() {
             if (m_passwordEdit->echoMode() == QLineEdit::Password) {
                 m_passwordEdit->setEchoMode(QLineEdit::Normal);
-                m_togglePassAction->setIcon(ThemeManager::instance().getIcon("passwordEditClose", QColor("#A3E635"), "RegisterWindow"));
+                m_togglePassAction->setIcon(ThemeManager::instance().getIcon(
+                    "passwordEditClose", ThemeManager::instance().accentColor(), "RegisterWindow"));
             }
             else {
                 m_passwordEdit->setEchoMode(QLineEdit::Password);
-                m_togglePassAction->setIcon(ThemeManager::instance().getIcon("passwordEditOpen", QColor("#9CA3AF"), "RegisterWindow"));
+                m_togglePassAction->setIcon(ThemeManager::instance().getIcon(
+                    "passwordEditOpen", QColor("#9CA3AF"), "RegisterWindow"));
             }
             });
     }
@@ -128,11 +135,13 @@ void RegisterWindow::setupUi()
         connect(m_toggleConfirmAction, &QAction::triggered, this, [this]() {
             if (m_confirmEdit->echoMode() == QLineEdit::Password) {
                 m_confirmEdit->setEchoMode(QLineEdit::Normal);
-                m_toggleConfirmAction->setIcon(ThemeManager::instance().getIcon("passwordEditClose", QColor("#A3E635"), "RegisterWindow"));
+                m_toggleConfirmAction->setIcon(ThemeManager::instance().getIcon(
+                    "passwordEditClose", ThemeManager::instance().accentColor(), "RegisterWindow"));
             }
             else {
                 m_confirmEdit->setEchoMode(QLineEdit::Password);
-                m_toggleConfirmAction->setIcon(ThemeManager::instance().getIcon("passwordEditOpen", QColor("#9CA3AF"), "RegisterWindow"));
+                m_toggleConfirmAction->setIcon(ThemeManager::instance().getIcon(
+                    "passwordEditOpen", QColor("#9CA3AF"), "RegisterWindow"));
             }
             });
     }
@@ -148,22 +157,23 @@ void RegisterWindow::setupUi()
     layout->addWidget(m_referralEdit);
 
     layout->addSpacing(10);
+    QString accent = ThemeManager::instance().accentColor().name();
     auto* privacyLabel = new QLabel(container);
     privacyLabel->setTextFormat(Qt::RichText);
     privacyLabel->setWordWrap(true);
-    privacyLabel->setStyleSheet("color: #9CA3AF; font-size: 11px;");
-    privacyLabel->setText("Даю согласие на обработку персональных данных на условиях "
-        "<a href='#' style='color: #A3E635; text-decoration: none;'>Политики конфиденциальности</a>");
+    privacyLabel->setStyleSheet("color: #A8998A; font-size: 11px;");
+    privacyLabel->setText(QString("Даю согласие на обработку персональных данных на условиях "
+        "<a href='#' style='color: %1; text-decoration: none;'>Политики конфиденциальности</a>").arg(accent));
     layout->addWidget(privacyLabel);
 
     layout->addSpacing(5);
     auto* agreementLabel = new QLabel(container);
     agreementLabel->setTextFormat(Qt::RichText);
     agreementLabel->setWordWrap(true);
-    agreementLabel->setStyleSheet("color: #9CA3AF; font-size: 11px;");
-    agreementLabel->setText("Нажимая «Создать аккаунт» я принимаю "
-        "<a href='#' style='color: #A3E635; text-decoration: none;'>Пользовательское соглашение</a> "
-        "и подтверждаю, что мне есть 14 лет.");
+    agreementLabel->setStyleSheet("color: #A8998A; font-size: 11px;");
+    agreementLabel->setText(QString("Нажимая «Создать аккаунт» я принимаю "
+        "<a href='#' style='color: %1; text-decoration: none;'>Пользовательское соглашение</a> "
+        "и подтверждаю, что мне есть 14 лет.").arg(accent));
     layout->addWidget(agreementLabel);
 
     layout->addSpacing(15);
@@ -179,7 +189,7 @@ void RegisterWindow::setupUi()
     layout->addSpacing(15);
     auto* bottomLayout = new QHBoxLayout();
     auto* haveAccountLabel = new QLabel("Уже есть аккаунт?", container);
-    haveAccountLabel->setStyleSheet("color: #9CA3AF; font-size: 13px; font-weight: bold;");
+    haveAccountLabel->setStyleSheet("color: #A8998A; font-size: 13px; font-weight: bold;");
 
     auto* loginBtn = new QPushButton("Войти", container);
     loginBtn->setObjectName("outlineButton");
@@ -238,6 +248,12 @@ void RegisterWindow::showEvent(QShowEvent* event)
         m_reqPanel->show();
         m_reqPanel->raise();
         m_reqPanel->move(x() - m_reqPanel->width() - 15, y());
+        QTimer::singleShot(0, this, [this]() {
+            // После того как окно полностью активировалось — поднимаем панель ещё раз
+            if (m_reqPanel && m_reqPanel->isVisible()) {
+                m_reqPanel->raise();
+            }
+            });
     }
 }
 
@@ -263,7 +279,7 @@ void RegisterWindow::addDivider(QVBoxLayout* layout, QWidget* parent)
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Plain);
     line->setFixedHeight(1);
-    line->setStyleSheet("background-color: #333333; border: none;");
+    line->setStyleSheet("background-color: #3A2F26; border: none;");
     layout->addWidget(line);
 }
 

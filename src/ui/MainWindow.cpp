@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
-    setWindowTitle("STALZONE Utility");
+    setWindowTitle("SZUtility");
     resize(1200, 750);
 
     DBManager::instance().init();
@@ -117,14 +117,22 @@ void MainWindow::setupUi()
     setCentralWidget(central);
 
     auto* mainLayout = new QVBoxLayout(central);
-    mainLayout->setContentsMargins(30, 30, 30, 30);
-    mainLayout->setSpacing(20);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
 
-    // === ВЕРХНЯЯ ПАНЕЛЬ ===
-    auto* topLayout = new QHBoxLayout();
+    // =========================================================
+    // === TOP BAR (60px) ===
+    // =========================================================
+    auto* topBar = new QWidget(this);
+    topBar->setObjectName("topBar");
+    topBar->setFixedHeight(60);
+    topBar->setAttribute(Qt::WA_StyledBackground, true);
 
-    // Логотип-кнопка
-    auto* logoBtn = new QPushButton("STALZONE Utility", this);
+    auto* topBarLayout = new QHBoxLayout(topBar);
+    topBarLayout->setContentsMargins(10, 0, 10, 0);
+    topBarLayout->setSpacing(0);
+
+    auto* logoBtn = new QPushButton("SZUtility", topBar);
     logoBtn->setObjectName("logoBtn");
     logoBtn->setIcon(ThemeManager::instance().getIcon(
         "szutility",
@@ -132,86 +140,56 @@ void MainWindow::setupUi()
         QString()));
     logoBtn->setIconSize(QSize(32, 32));
     logoBtn->setCursor(Qt::PointingHandCursor);
-    logoBtn->setFlat(true);                      // Убирает 3D-эффект кнопки
-    logoBtn->setFocusPolicy(Qt::NoFocus);        // Никогда не получает фокус
-    logoBtn->setStyleSheet("background: transparent; border: none;"); // Страховка
+    logoBtn->setFlat(true);
+    logoBtn->setFocusPolicy(Qt::NoFocus);
+    logoBtn->setStyleSheet("background: transparent; border: none;");
     connect(logoBtn, &QPushButton::clicked, this, &MainWindow::onBackToMain);
 
-    auto* btnLayout = new QHBoxLayout();
-    btnLayout->setSpacing(15);
-    btnLayout->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    auto* btnWidget = new QWidget(topBar);
+    auto* btnLayout = new QHBoxLayout(btnWidget);
+    btnLayout->setContentsMargins(0, 0, 0, 0);
+    btnLayout->setSpacing(10);
 
-    m_profileBtn = new QPushButton("ВОЙТИ | ЗАРЕГИСТРИРОВАТЬСЯ", this);
+    m_profileBtn = new QPushButton("ВОЙТИ | ЗАРЕГИСТРИРОВАТЬСЯ", btnWidget);
     m_profileBtn->setObjectName("btnLogin");
     m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOff", QColor("#000000")));
-    m_profileBtn->setIconSize(QSize(20, 20));
+    m_profileBtn->setIconSize(QSize(18, 18));
     m_profileBtn->setCursor(Qt::PointingHandCursor);
-    m_profileBtn->setMinimumHeight(40);
-    m_profileBtn->setFixedWidth(320);
+    m_profileBtn->setFixedSize(300, 36);
     connect(m_profileBtn, &QPushButton::clicked, this, &MainWindow::onProfileButtonClicked);
 
-    auto* btnExit = new QToolButton(this);
+    auto* btnExit = new QToolButton(btnWidget);
     btnExit->setObjectName("btnExit");
     btnExit->setIcon(ThemeManager::instance().getIcon("exitBtn", QColor("#000000")));
-    btnExit->setIconSize(QSize(24, 24));
-    btnExit->setFixedSize(40, 40);
+    btnExit->setIconSize(QSize(20, 20));
+    btnExit->setFixedSize(36, 36);
     btnExit->setCursor(Qt::PointingHandCursor);
     connect(btnExit, &QToolButton::clicked, qApp, &QApplication::quit);
 
     btnLayout->addWidget(m_profileBtn);
     btnLayout->addWidget(btnExit);
 
-    topLayout->addWidget(logoBtn, 0, Qt::AlignVCenter);
-    topLayout->addStretch();
-    topLayout->addLayout(btnLayout);
+    topBarLayout->addWidget(logoBtn, 0, Qt::AlignVCenter);
+    topBarLayout->addStretch();
+    topBarLayout->addWidget(btnWidget, 0, Qt::AlignVCenter);
 
-    // === ЦЕНТРАЛЬНАЯ ПАНЕЛЬ (КАРТОЧКИ) ===
+    mainLayout->addWidget(topBar);
+
+    // =========================================================
+    // === КОНТЕНТ (10px отступы) ===
+    // =========================================================
+    auto* contentWidget = new QWidget(this);
+    auto* contentLayout = new QVBoxLayout(contentWidget);
+    contentLayout->setContentsMargins(10, 10, 10, 10);
+    contentLayout->setSpacing(10);
+
     auto* centerLayout = new QHBoxLayout();
-    centerLayout->setSpacing(30);
     centerLayout->setAlignment(Qt::AlignCenter);
 
-    auto* btnAuction = new QPushButton("Аукцион", this);
-    btnAuction->setObjectName("btnAuctionCard");
-    btnAuction->setFixedSize(220, 180);
-    btnAuction->setCursor(Qt::PointingHandCursor);
-    QIcon auctionIcon = ThemeManager::instance().getIcon("auctionCard", QColor("#A3E635"));
-    if (!auctionIcon.isNull()) {
-        btnAuction->setIcon(auctionIcon);
-        btnAuction->setIconSize(QSize(48, 48));
-    }
-    connect(btnAuction, &QPushButton::clicked, this, &MainWindow::onAuctionClicked);
-
-    auto* btnBarter = new QPushButton("Калькулятор", this);
-    btnBarter->setObjectName("btnBarterCard");
-    btnBarter->setFixedSize(220, 180);
-    btnBarter->setCursor(Qt::PointingHandCursor);
-    QIcon barterIcon = ThemeManager::instance().getIcon("barterCard", QColor("#A3E635"));
-    if (!barterIcon.isNull()) {
-        btnBarter->setIcon(barterIcon);
-        btnBarter->setIconSize(QSize(48, 48));
-    }
-    connect(btnBarter, &QPushButton::clicked, this, &MainWindow::onBarterClicked);
-
-    auto* btnItems = new QPushButton("База предметов", this);
-    btnItems->setObjectName("btnItemsCard");
-    btnItems->setFixedSize(220, 180);
-    btnItems->setCursor(Qt::PointingHandCursor);
-    QIcon itemsIcon = ThemeManager::instance().getIcon("itemsCard", QColor("#A3E635"));
-    if (!itemsIcon.isNull()) {
-        btnItems->setIcon(itemsIcon);
-        btnItems->setIconSize(QSize(48, 48));
-    }
-    connect(btnItems, &QPushButton::clicked, this, &MainWindow::onItemsClicked);
-
-    centerLayout->addWidget(btnAuction);
-    centerLayout->addWidget(btnBarter);
-    centerLayout->addWidget(btnItems);
-
-    // === НИЖНЯЯ ПАНЕЛЬ ===
     auto* bottomLayout = new QHBoxLayout();
     bottomLayout->addStretch();
 
-    auto* btnDiscord = new QToolButton(this);
+    auto* btnDiscord = new QToolButton(contentWidget);
     btnDiscord->setObjectName("btnDiscord");
     btnDiscord->setIcon(ThemeManager::instance().getIcon("discordBtn", QColor("#FFFFFF")));
     btnDiscord->setIconSize(QSize(24, 24));
@@ -219,11 +197,12 @@ void MainWindow::setupUi()
     btnDiscord->setCursor(Qt::PointingHandCursor);
     bottomLayout->addWidget(btnDiscord);
 
-    mainLayout->addLayout(topLayout);
-    mainLayout->addStretch();
-    mainLayout->addLayout(centerLayout);
-    mainLayout->addStretch();
-    mainLayout->addLayout(bottomLayout);
+    contentLayout->addStretch();
+    contentLayout->addLayout(centerLayout);
+    contentLayout->addStretch();
+    contentLayout->addLayout(bottomLayout);
+
+    mainLayout->addWidget(contentWidget);
 }
 
 // =========================================================

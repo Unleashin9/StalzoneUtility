@@ -20,11 +20,10 @@
 
 LoginWindow::LoginWindow(QWidget* parent) : QDialog(parent)
 {
-    // Возвращаем Qt::Dialog — окно получает фокус, Esc работает
     setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setFixedWidth(420);
-    setFocusPolicy(Qt::StrongFocus); // <--- явно разрешаем фокус
+    setFocusPolicy(Qt::StrongFocus);
 
     setupUi();
     adjustSize();
@@ -54,7 +53,10 @@ void LoginWindow::setupUi()
     headerLayout->setSpacing(15);
 
     auto* iconLabel = new QLabel(container);
-    QIcon loginIcon = ThemeManager::instance().getIcon("profileBtn", QColor("#A3E635"), "LoginWindow");
+    QIcon loginIcon = ThemeManager::instance().getIcon(
+        "profileBtn",
+        ThemeManager::instance().accentColor(), // <--- ИСПРАВЛЕНО
+        "LoginWindow");
     if (!loginIcon.isNull()) iconLabel->setPixmap(loginIcon.pixmap(48, 48));
     headerLayout->addWidget(iconLabel);
 
@@ -129,7 +131,7 @@ void LoginWindow::setupUi()
     bottomLayout->setContentsMargins(0, 0, 0, 0);
 
     auto* noAccountLabel = new QLabel("Нет аккаунта?", container);
-    noAccountLabel->setStyleSheet("color: #9CA3AF; font-size: 13px; font-weight: bold;");
+    noAccountLabel->setStyleSheet("color: #A8998A; font-size: 13px; font-weight: bold;"); // <--- Текст приглушенный
 
     auto* registerBtn = new QPushButton("Создать аккаунт", container);
     registerBtn->setObjectName("outlineButton");
@@ -154,7 +156,7 @@ void LoginWindow::addDivider(QVBoxLayout* layout, QWidget* parent)
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Plain);
     line->setFixedHeight(1);
-    line->setStyleSheet("background-color: #333333; border: none;");
+    line->setStyleSheet("background-color: #3A2F26; border: none;"); // <--- Под цвет обводки
     layout->addWidget(line);
 }
 
@@ -173,7 +175,10 @@ void LoginWindow::togglePasswordVisibility()
         m_passwordEdit->setEchoMode(QLineEdit::Normal);
         if (m_togglePasswordAction) {
             m_togglePasswordAction->setIcon(
-                ThemeManager::instance().getIcon("passwordEditClose", QColor("#A3E635"), "LoginWindow"));
+                ThemeManager::instance().getIcon(
+                    "passwordEditClose",
+                    ThemeManager::instance().accentColor(), // <--- ИСПРАВЛЕНО
+                    "LoginWindow"));
         }
     }
     else {

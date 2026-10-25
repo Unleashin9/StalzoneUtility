@@ -26,9 +26,9 @@ void ThemeManager::setTheme(ThemeType theme)
 QColor ThemeManager::accentColor() const
 {
     switch (m_currentTheme) {
-    case ThemeType::Dark:  return QColor("#A3E635");
-    case ThemeType::Light: return QColor("#84CC16");
-    default: return QColor("#A3E635");
+    case ThemeType::Dark:  return QColor("#F0A93B"); // Янтарный (ржавчина)
+    case ThemeType::Light: return QColor("#D6932F"); // Тёмный янтарь для светлой темы
+    default: return QColor("#F0A93B");
     }
 }
 

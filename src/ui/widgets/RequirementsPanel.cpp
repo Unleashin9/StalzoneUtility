@@ -6,10 +6,10 @@
 #include <QLabel>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
+#include <QDebug>
 
-RequirementsPanel::RequirementsPanel(QWidget* parent) : QWidget(parent) // <--- передаем parent
+RequirementsPanel::RequirementsPanel(QWidget* parent) : QWidget(parent)
 {
-    // Убрали WindowStaysOnTopHint. Теперь панель — дочернее Tool-окно
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_ShowWithoutActivating);
@@ -37,7 +37,6 @@ void RequirementsPanel::setupUi()
     layout->setContentsMargins(20, 20, 20, 20);
     layout->setSpacing(8);
 
-    // ТРЕБОВАНИЯ К ИМЕНИ
     auto* userTitle = new QLabel("Требования к имени", container);
     userTitle->setObjectName("rulesTitle");
     layout->addWidget(userTitle);
@@ -53,7 +52,6 @@ void RequirementsPanel::setupUi()
     for (const QString& text : uRules) {
         auto* row = new QHBoxLayout();
         row->setSpacing(8);
-        // Явно центрируем элементы по вертикали
         row->setAlignment(Qt::AlignVCenter);
 
         auto* icon = new QLabel(container);
@@ -61,10 +59,9 @@ void RequirementsPanel::setupUi()
 
         auto* lbl = new QLabel(text, container);
         lbl->setWordWrap(true);
-        lbl->setStyleSheet("color: #9CA3AF; font-size: 11px;");
-        lbl->setAlignment(Qt::AlignVCenter | Qt::AlignLeft); // <--- Центрируем текст по вертикали
+        lbl->setStyleSheet("color: #A8998A; font-size: 11px;");
+        lbl->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-        // Оба виджета выравниваем по центру
         row->addWidget(icon, 0, Qt::AlignVCenter);
         row->addWidget(lbl, 1, Qt::AlignVCenter);
 
@@ -72,16 +69,14 @@ void RequirementsPanel::setupUi()
         m_icons.append(icon);
     }
 
-    // Разделитель
     layout->addSpacing(10);
     auto* line = new QFrame(container);
     line->setFrameShape(QFrame::HLine);
     line->setFixedHeight(1);
-    line->setStyleSheet("background-color: #333333; border: none;");
+    line->setStyleSheet("background-color: #3A2F26; border: none;");
     layout->addWidget(line);
     layout->addSpacing(10);
 
-    // ТРЕБОВАНИЯ К ПАРОЛЮ
     auto* passTitle = new QLabel("Требования к паролю", container);
     passTitle->setObjectName("rulesTitle");
     layout->addWidget(passTitle);
@@ -102,7 +97,7 @@ void RequirementsPanel::setupUi()
 
         auto* lbl = new QLabel(text, container);
         lbl->setWordWrap(true);
-        lbl->setStyleSheet("color: #9CA3AF; font-size: 11px;");
+        lbl->setStyleSheet("color: #A8998A; font-size: 11px;");
         lbl->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
         row->addWidget(icon, 0, Qt::AlignVCenter);
@@ -121,9 +116,11 @@ void RequirementsPanel::setRuleValid(int index, bool isValid)
 {
     if (index < 0 || index >= m_icons.size()) return;
 
+    QColor color = isValid ? ThemeManager::instance().accentColor() : QColor("#E5533D");
+
     QIcon icon = ThemeManager::instance().getIcon(
         isValid ? "yes" : "no",
-        isValid ? QColor("#A3E635") : QColor("#F87171"),
+        color,
         "RegisterWindow");
 
     if (!icon.isNull()) {
