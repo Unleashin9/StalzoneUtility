@@ -39,6 +39,12 @@ QIcon ThemeManager::getIcon(const QString& iconName, const QColor& color, const 
         ? QStringLiteral(":/resources/icons/%1.svg").arg(iconName)
         : QStringLiteral(":/resources/icons/%1/%2.svg").arg(folder, iconName);
 
+    QFile testFile(path);
+    qDebug() << "[getIcon] Path:" << path
+        << "exists:" << testFile.exists()
+        << "name:" << iconName
+        << "folder:" << folder;
+
     QSvgRenderer renderer(path);
     if (!renderer.isValid()) {
         qWarning() << "SVG not found or invalid:" << path;

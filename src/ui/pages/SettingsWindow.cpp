@@ -1,6 +1,7 @@
 ﻿#include "SettingsWindow.h"
 #include "core/ThemeManager.h"
 #include "ui/widgets/Toast.h"
+#include "core/DBManager.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -20,6 +21,7 @@
 #include <QPainterPath>
 #include <QFrame>
 #include <QLineEdit>
+#include <QAction>
 #include <QRegularExpression>
 
 SettingsWindow::SettingsWindow(QWidget* parent) : QWidget(parent)
@@ -49,6 +51,41 @@ void SettingsWindow::setUserInfo(const UserInfo& info)
     loadAvatar();
 }
 
+// Хелпер для создания поля пароля с глазиком и фолбэком
+QLineEdit* createPasswordField(QWidget* parent, const QString& placeholder) {
+    auto* field = new QLineEdit(parent);
+    field->setEchoMode(QLineEdit::Password);
+    field->setPlaceholderText(placeholder);
+
+    QIcon openEye = ThemeManager::instance().getIcon("passwordEditOpen", QColor("#9CA3AF"), "SettingsWindow");
+
+    if (!openEye.isNull()) {
+        // Если SVG иконки есть — используем их
+        QAction* toggleAction = field->addAction(openEye, QLineEdit::TrailingPosition);
+        QObject::connect(toggleAction, &QAction::triggered, field, [field, toggleAction]() {
+            if (field->echoMode() == QLineEdit::Password) {
+                field->setEchoMode(QLineEdit::Normal);
+                QIcon closeIcon = ThemeManager::instance().getIcon("passwordEditClose", ThemeManager::instance().accentColor(), "SettingsWindow");
+                if (!closeIcon.isNull()) toggleAction->setIcon(closeIcon);
+            }
+            else {
+                field->setEchoMode(QLineEdit::Password);
+                QIcon openIcon = ThemeManager::instance().getIcon("passwordEditOpen", QColor("#9CA3AF"), "SettingsWindow");
+                if (!openIcon.isNull()) toggleAction->setIcon(openIcon);
+            }
+            });
+    }
+    else {
+        // Fallback: текстовый глазик
+        QAction* toggleAction = field->addAction("👁", QLineEdit::TrailingPosition);
+        QObject::connect(toggleAction, &QAction::triggered, field, [field]() {
+            if (field->echoMode() == QLineEdit::Password) field->setEchoMode(QLineEdit::Normal);
+            else field->setEchoMode(QLineEdit::Password);
+            });
+    }
+    return field;
+}
+
 void SettingsWindow::setupUi()
 {
     auto* mainLayout = new QVBoxLayout(this);
@@ -67,8 +104,7 @@ void SettingsWindow::setupUi()
 
     auto* logoBtn = new QPushButton("STALZONE Utility", topBar);
     logoBtn->setObjectName("logoBtn");
-    logoBtn->setIcon(ThemeManager::instance().getIcon(
-        "szutility", ThemeManager::instance().accentColor(), QString()));
+    logoBtn->setIcon(ThemeManager::instance().getIcon("szutility", ThemeManager::instance().accentColor(), QString()));
     logoBtn->setIconSize(QSize(32, 32));
     logoBtn->setCursor(Qt::PointingHandCursor);
     logoBtn->setFlat(true);
@@ -80,10 +116,7 @@ void SettingsWindow::setupUi()
     m_userInfoLabel->setStyleSheet("color: #A8998A; font-size: 14px; font-weight: bold; margin-left: 20px;");
 
     auto* emailStatusLabel = new QLabel("• ПОЧТА НЕ ПОДТВЕРЖДЕНА", topBar);
-    emailStatusLabel->setStyleSheet(
-        "background-color: #1F1A16; color: #E5533D; border: 1px solid #E5533D;"
-        "border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: bold;"
-    );
+    emailStatusLabel->setObjectName("emailStatusLabel");
 
     topBarLayout->addWidget(logoBtn, 0, Qt::AlignVCenter);
     topBarLayout->addWidget(m_userInfoLabel, 0, Qt::AlignVCenter);
@@ -108,7 +141,7 @@ void SettingsWindow::setupUi()
 
     auto createSidebarItem = [this, sidebar](const QString& text, const QString& iconName, int pageIndex, const QString& pageTitle) -> QPushButton* {
         auto* btn = new QPushButton(" " + text, sidebar);
-        btn->setObjectName("sidebarItem");
+        btn->setObjectName("settingsNavBtn");
         btn->setCheckable(true);
         btn->setAutoExclusive(true);
         btn->setCursor(Qt::PointingHandCursor);
@@ -177,7 +210,6 @@ void SettingsWindow::setupUi()
     auto* divider = new QFrame(sidebar);
     divider->setObjectName("sidebarDivider");
     divider->setFixedHeight(1);
-    divider->setStyleSheet("background-color: #3A2F26; margin: 0px 5px;");
     sidebarLayout->addWidget(divider);
     sidebarLayout->addSpacing(10);
 
@@ -240,7 +272,6 @@ void SettingsWindow::setupUi()
     overviewLayout->setSpacing(15);
     overviewLayout->setAlignment(Qt::AlignTop);
 
-    // --- Панель профиля ---
     auto* profilePanel = new QWidget(pageOverview);
     profilePanel->setObjectName("profilePanel");
     profilePanel->setAttribute(Qt::WA_StyledBackground, true);
@@ -279,14 +310,11 @@ void SettingsWindow::setupUi()
 
     overviewLayout->addWidget(profilePanel);
 
-    // --- Ряд из двух панелей (выровнены по верху) ---
     auto* panelsRow = new QHBoxLayout();
     panelsRow->setSpacing(15);
     panelsRow->setContentsMargins(0, 0, 0, 0);
 
-    // =========================================================
-    // === ЛЕВАЯ ПАНЕЛЬ: ДАННЫЕ ДЛЯ ВХОДА ===
-    // =========================================================
+    // ЛЕВАЯ ПАНЕЛЬ: ДАННЫЕ ДЛЯ ВХОДА
     auto* loginDataPanel = new QWidget(pageOverview);
     loginDataPanel->setObjectName("profilePanel");
     loginDataPanel->setAttribute(Qt::WA_StyledBackground, true);
@@ -339,9 +367,7 @@ void SettingsWindow::setupUi()
     currentPassLabel->setObjectName("inputLabel");
     loginDataLayout->addWidget(currentPassLabel);
     loginDataLayout->addSpacing(4);
-    m_currentPassField = new QLineEdit(loginDataPanel);
-    m_currentPassField->setEchoMode(QLineEdit::Password);
-    m_currentPassField->setPlaceholderText("Введите текущий пароль");
+    m_currentPassField = createPasswordField(loginDataPanel, "Введите текущий пароль");
     loginDataLayout->addWidget(m_currentPassField);
     loginDataLayout->addSpacing(8);
 
@@ -352,9 +378,7 @@ void SettingsWindow::setupUi()
     newPassCol->setSpacing(4);
     auto* newPassLabel = new QLabel("НОВЫЙ ПАРОЛЬ", loginDataPanel);
     newPassLabel->setObjectName("inputLabel");
-    m_newPassField = new QLineEdit(loginDataPanel);
-    m_newPassField->setEchoMode(QLineEdit::Password);
-    m_newPassField->setPlaceholderText("Новый пароль");
+    m_newPassField = createPasswordField(loginDataPanel, "Новый пароль");
     newPassCol->addWidget(newPassLabel);
     newPassCol->addWidget(m_newPassField);
 
@@ -362,9 +386,7 @@ void SettingsWindow::setupUi()
     confirmPassCol->setSpacing(4);
     auto* confirmPassLabel = new QLabel("ПОВТОРИТЕ ПАРОЛЬ", loginDataPanel);
     confirmPassLabel->setObjectName("inputLabel");
-    m_confirmPassField = new QLineEdit(loginDataPanel);
-    m_confirmPassField->setEchoMode(QLineEdit::Password);
-    m_confirmPassField->setPlaceholderText("Повторите пароль");
+    m_confirmPassField = createPasswordField(loginDataPanel, "Повторите пароль");
     confirmPassCol->addWidget(confirmPassLabel);
     confirmPassCol->addWidget(m_confirmPassField);
 
@@ -382,9 +404,7 @@ void SettingsWindow::setupUi()
 
     panelsRow->addWidget(loginDataPanel, 1, Qt::AlignTop);
 
-    // =========================================================
-    // === ПРАВАЯ ПАНЕЛЬ: СПОСОБЫ ВХОДА ===
-    // =========================================================
+    // ПРАВАЯ ПАНЕЛЬ: СПОСОБЫ ВХОДА
     auto* loginMethodsPanel = new QWidget(pageOverview);
     loginMethodsPanel->setObjectName("profilePanel");
     loginMethodsPanel->setAttribute(Qt::WA_StyledBackground, true);
@@ -408,10 +428,11 @@ void SettingsWindow::setupUi()
         const QString& title, const QString& subtitle,
         const QString& badgeText, bool isActive) -> QWidget* {
             auto* row = new QWidget(loginMethodsPanel);
-            row->setObjectName("methodRow"); // <--- ID для прозрачного фона
+            row->setObjectName("methodRow");
+            row->setAttribute(Qt::WA_StyledBackground, true); // <--- ВАЖНО
             auto* rowLayout = new QHBoxLayout(row);
             rowLayout->setContentsMargins(0, 6, 0, 6);
-            rowLayout->setSpacing(8);        // <--- УМЕНЬШИЛИ С 15 ДО 8
+            rowLayout->setSpacing(8);
 
             auto* icon = new QLabel(row);
             icon->setFixedSize(28, 28);
@@ -433,6 +454,9 @@ void SettingsWindow::setupUi()
 
             auto* badge = new QLabel(badgeText, row);
             badge->setObjectName(isActive ? "badgeActive" : "badgeInactive");
+            badge->setAlignment(Qt::AlignCenter);
+            badge->setMinimumWidth(120);
+            badge->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
             rowLayout->addWidget(badge, 0, Qt::AlignVCenter);
 
             return row;
@@ -492,7 +516,6 @@ void SettingsWindow::setupUi()
     overviewLayout->addLayout(panelsRow);
     m_pages->addWidget(pageOverview);
 
-    // Заглушки для страниц 1-6
     for (int i = 1; i <= 6; ++i) {
         auto* page = new QWidget();
         page->setObjectName("innerContent");

@@ -8,10 +8,6 @@
 /*   ТЕКСТ:         #F5E6D3 (важный), #A8998A (обычный)      */
 /*   РАМКИ:         #3A2F26                                  */
 /*   ОПАСНОСТЬ:     #E5533D / #F07662 / #CC4730              */
-/*                                                           */
-/*   ТИПОГРАФИКА (IBM Plex Sans):                            */
-/*     400 = Regular     500 = Medium                        */
-/*     600 = SemiBold    700 = Bold                          */
 /* ========================================================= */
 
 /* ========================================================= */
@@ -23,12 +19,11 @@ QWidget {
     color: #A8998A;
     font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
     font-size: 14px;
-    font-weight: 400;  /* Regular по умолчанию */
+    font-weight: 400;
 }
 
 QLabel {
     background-color: transparent;
-    font-weight: 400;
 }
 
 QDialog,
@@ -46,17 +41,14 @@ QPushButton {
     border: none;
     border-radius: 8px;
     padding: 0px 16px;
-    font-weight: 700;  /* Bold */
+    font-weight: 700;
 }
 QPushButton:hover    { background-color: #F5BD6A; }
 QPushButton:pressed  { background-color: #D6932F; }
-QPushButton:disabled {
-    background-color: #3A2F26;
-    color: #A8998A;
-}
+QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
 
 /* ========================================================= */
-/* === 2. MAINWINDOW / TOP BAR ===                           */
+/* === 2. MAINWINDOW ===                                     */
 /* ========================================================= */
 
 #mainContainer {
@@ -65,14 +57,17 @@ QPushButton:disabled {
     border-radius: 0;
 }
 
-#topBar {
+#mainContainer #topBar {
     background-color: #1F1A16;
-    border: none;
     border-bottom: 1px solid #3A2F26;
-    border-radius: 0;
 }
 
-#logoBtn {
+#mainContainer #bottomBar {
+    background-color: #1F1A16;
+    border-top: 1px solid #3A2F26;
+}
+
+#mainContainer #logoBtn {
     background: transparent;
     background-color: transparent;
     color: #F5E6D3;
@@ -80,15 +75,14 @@ QPushButton:disabled {
     outline: none;
     border-radius: 0;
     font-size: 40px;
-    font-weight: 700;  /* Bold */
+    font-weight: 700;
     text-align: left;
     padding: 0px 10px;
     min-height: 60px;
 }
-#logoBtn:hover,
-#logoBtn:pressed,
-#logoBtn:focus,
-#logoBtn:default {
+#mainContainer #logoBtn:hover,
+#mainContainer #logoBtn:pressed,
+#mainContainer #logoBtn:focus {
     background: transparent;
     background-color: transparent;
     color: #F5E6D3;
@@ -96,48 +90,488 @@ QPushButton:disabled {
     outline: none;
 }
 
-#appTitle {
-    font-size: 32pt;
-    font-weight: 600;  /* SemiBold */
-    color: @accent@;
+#mainContainer #mainAuctionNavBtn {
+    background-color: transparent;
+    color: #A8998A;
+    border: 1px solid #3A2F26;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 0px 18px;
+    text-align: center;
 }
-#appSubtitle {
-    font-size: 18pt;
-    font-weight: 400;  /* Regular */
-    color: #FFFFFF;
+#mainContainer #mainAuctionNavBtn:hover {
+    background-color: rgba(245, 230, 211, 0.05);
+    color: #F5E6D3;
+    border: 1px solid #4A3F36;
 }
 
-#btnLogin {
+#mainContainer #btnLogin {
     background-color: @accent@;
     color: #181411;
     border: none;
     border-radius: 8px;
     font-size: 14px;
-    font-weight: 700;  /* Bold */
+    font-weight: 700;
     text-align: center;
     padding-left: 15px;
     padding-right: 15px;
 }
-#btnLogin:hover   { background-color: #F5BD6A; }
-#btnLogin:pressed { background-color: #D6932F; }
+#mainContainer #btnLogin:hover   { background-color: #F5BD6A; }
+#mainContainer #btnLogin:pressed { background-color: #D6932F; }
 
-QToolButton#btnExit,
-QToolButton#btnDiscord {
-    border: none;
+#mainContainer QToolButton#btnExit {
+    background-color: #E5533D;
     border-radius: 8px;
-    padding: 0px;
 }
+#mainContainer QToolButton#btnExit:hover   { background-color: #F07662; }
+#mainContainer QToolButton#btnExit:pressed { background-color: #CC4730; }
 
-QToolButton#btnExit { background-color: #E5533D; }
-QToolButton#btnExit:hover   { background-color: #F07662; }
-QToolButton#btnExit:pressed { background-color: #CC4730; }
-
-QToolButton#btnDiscord { background-color: #5865F2; }
-QToolButton#btnDiscord:hover   { background-color: #7983F5; }
-QToolButton#btnDiscord:pressed { background-color: #4752C4; }
+#mainContainer QToolButton#btnDiscord {
+    background-color: #5865F2;
+    border-radius: 8px;
+}
+#mainContainer QToolButton#btnDiscord:hover   { background-color: #7983F5; }
+#mainContainer QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 
 /* ========================================================= */
-/* === 3. ДИАЛОГИ АВТОРИЗАЦИИ (LOGIN / REGISTER) ===         */
+/* === 3. AUCTION WINDOW ===                                 */
+/* ========================================================= */
+
+#auctionRoot {
+    background-color: #181411;
+}
+
+#auctionRoot #topBar {
+    background-color: #1F1A16;
+    border-bottom: 1px solid #3A2F26;
+}
+
+#auctionRoot #logoBtn {
+    background: transparent;
+    color: #F5E6D3;
+    border: none;
+    outline: none;
+    font-size: 40px;
+    font-weight: 700;
+    text-align: left;
+    padding: 0px 10px;
+    min-height: 60px;
+}
+#auctionRoot #logoBtn:hover {
+    background: transparent;
+    color: #F5E6D3;
+}
+
+#auctionRoot #navBtn {
+    background-color: transparent;
+    color: #A8998A;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 0px 18px;
+    font-weight: 600;
+    font-size: 15px;
+    text-align: center;
+}
+#auctionRoot #navBtn:hover {
+    background-color: rgba(245, 230, 211, 0.05);
+    color: #F5E6D3;
+}
+#auctionRoot #navBtn:checked {
+    background-color: transparent;
+    color: @accent@;
+    border: 1px solid @accent@;
+}
+
+#auctionRoot #quickAccessSidebar {
+    background-color: #1F1A16;
+    border-right: 1px solid #3A2F26;
+}
+#auctionRoot #quickAccessTitle {
+    color: #A8998A;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+#auctionRoot #quickAccessBtn {
+    background-color: transparent;
+    color: #A8998A;
+    border: 1px solid transparent;
+    border-left: 4px solid transparent;
+    border-radius: 6px;
+    text-align: left;
+    padding-left: 7px;
+    font-size: 14px;
+    font-weight: 600;
+}
+#auctionRoot #quickAccessBtn:hover {
+    background-color: transparent;
+    color: #F5E6D3;
+    border: 1px solid transparent;
+    border-left: 4px solid transparent;
+}
+#auctionRoot #quickAccessBtn:checked {
+    background-color: rgba(240, 169, 59, 0.05);
+    color: @accent@;
+    border: 1px solid @accent@;
+    border-left: 4px solid @accent@;
+}
+
+#auctionRoot #categoryBtn {
+    background-color: transparent;
+    color: #A8998A;
+    border: 1px solid transparent;
+    border-left: 4px solid transparent;
+    border-radius: 6px;
+    text-align: left;
+    padding-left: 7px;
+    font-size: 14px;
+    font-weight: 600;
+}
+#auctionRoot #categoryBtn:hover {
+    background-color: rgba(245, 230, 211, 0.05);
+    color: #F5E6D3;
+    border: 1px solid transparent;
+    border-left: 4px solid transparent;
+}
+#auctionRoot #categoryBtn:checked {
+    background-color: rgba(240, 169, 59, 0.05);
+    color: @accent@;
+    border: 1px solid @accent@;
+    border-left: 4px solid @accent@;
+}
+
+#auctionRoot #rightTopBar {
+    background-color: #181411;
+    border-bottom: 1px solid #3A2F26;
+}
+#auctionRoot #searchEdit {
+    background-color: #1F1A16;
+    color: #F5E6D3;
+    border: 1px solid #3A2F26;
+    border-radius: 6px;
+    padding-left: 10px;
+    font-weight: 400;
+}
+#auctionRoot #filterBtn {
+    background-color: transparent;
+    color: #A8998A;
+    border: 1px solid #3A2F26;
+    border-radius: 6px;
+    padding: 0px 12px;
+    text-align: left;
+    font-weight: 500;
+}
+#auctionRoot #filterBtn:hover {
+    background-color: rgba(245, 230, 211, 0.05);
+    color: #F5E6D3;
+    border: 1px solid #4A3F36;
+}
+
+#auctionRoot #dropdownPopup {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 8px;
+}
+#auctionRoot #dropdownItem {
+    background-color: transparent;
+    color: #A8998A;
+    border: none;
+    border-radius: 6px;
+    text-align: left;
+    padding: 0px 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+#auctionRoot #dropdownItem:hover {
+    background-color: rgba(245, 230, 211, 0.05);
+    color: #F5E6D3;
+}
+
+#auctionRoot #itemsList {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0px;
+}
+#auctionRoot #itemsList::item {
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+}
+#auctionRoot #itemsList::item:hover,
+#auctionRoot #itemsList::item:selected {
+    background-color: transparent;
+    border: none;
+}
+
+#auctionRoot #itemCardIconContainer {
+    background-color: #1F1A16;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border: none;
+}
+#auctionRoot #itemCardNameContainer {
+    background-color: #181411;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border: none;
+}
+#auctionRoot #itemNameLabel {
+    font-size: 11px;
+    font-weight: 700;
+    background: transparent;
+}
+
+#auctionRoot #bottomBar {
+    background-color: #1F1A16;
+    border-top: 1px solid #3A2F26;
+}
+
+/* ========================================================= */
+/* === 4. SETTINGS WINDOW ===                                */
+/* ========================================================= */
+
+#settingsRoot {
+    background-color: #181411;
+}
+
+#settingsRoot #topBar {
+    background-color: #1F1A16;
+    border-bottom: 1px solid #3A2F26;
+}
+
+#settingsRoot #logoBtn {
+    background: transparent;
+    color: #F5E6D3;
+    border: none;
+    outline: none;
+    font-size: 40px;
+    font-weight: 700;
+    text-align: left;
+    padding: 0px 10px;
+    min-height: 60px;
+}
+#settingsRoot #logoBtn:hover {
+    background: transparent;
+    color: #F5E6D3;
+}
+
+#settingsRoot #settingsSidebar {
+    background-color: #1F1A16;
+    border-right: 1px solid #3A2F26;
+}
+#settingsRoot #sidebarSectionTitle {
+    color: #A8998A;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+#settingsRoot #sidebarDivider {
+    background-color: #3A2F26;
+    margin: 0px 5px;
+}
+#settingsRoot #sidebarUsername {
+    color: #F5E6D3;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+#settingsRoot #settingsNavBtn {
+    background-color: transparent;
+    color: #A8998A;
+    border: 1px solid transparent;
+    border-left: 4px solid transparent;
+    border-radius: 6px;
+    text-align: left;
+    padding-left: 7px;
+    font-size: 14px;
+    font-weight: 600;
+}
+#settingsRoot #settingsNavBtn:hover {
+    background-color: rgba(245, 230, 211, 0.05);
+    color: #F5E6D3;
+    border-left: 4px solid transparent;
+}
+#settingsRoot #settingsNavBtn:checked {
+    background-color: rgba(240, 169, 59, 0.05);
+    color: @accent@;
+    border: 1px solid @accent@;
+    border-left: 4px solid @accent@;
+}
+
+#settingsRoot #contentHeaderPanel {
+    background-color: #181411;
+    border-bottom: 1px solid #3A2F26;
+}
+#settingsRoot #pageTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #F5E6D3;
+}
+
+#settingsRoot #profilePanel {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 12px;
+}
+#settingsRoot #panelTitle {
+    font-size: 15px;
+    font-weight: 600;
+    color: #F5E6D3;
+}
+#settingsRoot #panelSubtitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: #F5E6D3;
+}
+#settingsRoot #accountNameLabel {
+    font-size: 18px;
+    font-weight: 700;
+    color: #F5E6D3;
+}
+#settingsRoot #accountDetailsLabel {
+    font-size: 13px;
+    color: #A8998A;
+}
+#settingsRoot #inputLabel {
+    font-size: 11px;
+    font-weight: 500;
+    color: #A8998A;
+}
+
+/* === СПОСОБЫ ВХОДА === */
+#settingsRoot #methodRow {
+    background: transparent;
+    background-color: transparent;
+    border: none;
+    border-radius: 6px;
+}
+
+#settingsRoot #methodTitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: #F5E6D3;
+}
+#settingsRoot #methodSubtitle {
+    font-size: 12px;
+    color: #A8998A;
+}
+#settingsRoot #bindingsLabel {
+    font-size: 13px;
+    color: #A8998A;
+}
+
+/* Бейджи статуса */
+#settingsRoot #badgeActive {
+    color: @accent@;
+    background-color: transparent;
+    border: 1px solid @accent@;
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+#settingsRoot #badgeInactive {
+    color: #A8998A;
+    background-color: transparent;
+    border: 1px solid #3A2F26;
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+#settingsRoot #emailStatusLabel {
+    background-color: #1F1A16;
+    color: #E5533D;
+    border: 1px solid #E5533D;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#settingsRoot #dividerLine {
+    background-color: #3A2F26;
+    max-height: 1px;
+    border: none;
+}
+#settingsRoot #accentButton {
+    background-color: @accent@;
+    color: #181411;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+#settingsRoot #accentButton:hover   { background-color: #F5BD6A; }
+#settingsRoot #accentButton:pressed { background-color: #D6932F; }
+
+#settingsRoot #outlineButton {
+    background-color: transparent;
+    border: 1px solid @accent@;
+    color: @accent@;
+    border-radius: 6px;
+    padding: 4px 15px;
+    font-weight: 600;
+    font-size: 12px;
+}
+#settingsRoot #outlineButton:hover {
+    background-color: rgba(240, 169, 59, 0.1);
+}
+
+#settingsRoot #footerLink {
+    background-color: transparent;
+    color: @accent@;
+    border: none;
+    font-weight: 500;
+    text-align: left;
+    padding: 0;
+}
+#settingsRoot #footerLink:hover {
+    text-decoration: underline;
+    color: #F5BD6A;
+}
+
+#settingsRoot #btnDiscord {
+    background-color: #5865F2;
+    border: none;
+    border-radius: 8px;
+}
+#settingsRoot #btnDiscord:hover { background-color: #7983F5; }
+
+#settingsRoot QLineEdit {
+    background-color: #221C18;
+    color: #F5E6D3;
+    border: 1px solid #3A2F26;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-weight: 400;
+}
+#settingsRoot QLineEdit:focus {
+    border: 1px solid @accent@;
+}
+#settingsRoot QLineEdit:read-only {
+    background-color: #181411;
+    color: #A8998A;
+    border: 1px dashed #3A2F26;
+}
+
+/* Иконки "глазик" */
+#settingsRoot QLineEdit QToolButton {
+    background: transparent;
+    border: none;
+    padding: 0px;
+    margin: 0px 5px 0px 0px;
+}
+#settingsRoot QLineEdit QToolButton:hover {
+    background-color: rgba(245, 230, 211, 0.08);
+    border-radius: 4px;
+}
+
+/* ========================================================= */
+/* === 5. ДИАЛОГИ АВТОРИЗАЦИИ ===                            */
 /* ========================================================= */
 
 #dialogContainer {
@@ -148,37 +582,33 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 
 #dialogContainer #loginTitle {
     font-size: 24px;
-    font-weight: 600;  /* SemiBold */
+    font-weight: 600;
     color: #F5E6D3;
 }
 #dialogContainer #loginSubtitle {
     font-size: 14px;
-    font-weight: 400;  /* Regular */
+    font-weight: 400;
     color: #A8998A;
 }
-
 #dialogContainer #inputLabel {
     font-size: 12px;
-    font-weight: 500;  /* Medium */
+    font-weight: 500;
     color: #A8998A;
 }
 
 #dialogContainer #dividerLine {
-    color: #3A2F26;
     background-color: #3A2F26;
     max-height: 1px;
     border: none;
-    margin-top: 5px;
-    margin-bottom: 5px;
+    margin: 5px 0;
 }
 
 #dialogContainer #linkButton {
-    background-color: transparent;
+    background: transparent;
     color: @accent@;
     font-size: 12px;
-    font-weight: 500;  /* Medium */
+    font-weight: 500;
     border: none;
-    padding: 0px;
     text-align: right;
 }
 #dialogContainer #linkButton:hover {
@@ -189,7 +619,7 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 #dialogContainer #loginSubmitBtn {
     background-color: @accent@;
     color: #181411;
-    font-weight: 700;  /* Bold */
+    font-weight: 700;
     font-size: 16px;
     border-radius: 8px;
 }
@@ -202,7 +632,7 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
     color: @accent@;
     border-radius: 6px;
     padding: 4px 15px;
-    font-weight: 600;  /* SemiBold */
+    font-weight: 600;
     font-size: 12px;
 }
 #dialogContainer #outlineButton:hover   { background-color: rgba(240, 169, 59, 0.1); }
@@ -214,14 +644,14 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
     border: 1px solid #3A2F26;
     border-radius: 6px;
     padding: 8px;
-    font-weight: 400;  /* Regular */
+    font-weight: 400;
 }
 #dialogContainer QLineEdit:focus {
     border: 1px solid @accent@;
 }
 
 #dialogContainer QLineEdit QToolButton {
-    background-color: transparent;
+    background: transparent;
     border: none;
     padding: 0px;
     margin: 0px 5px 0px 0px;
@@ -233,10 +663,9 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 
 #dialogContainer QCheckBox {
     background: transparent;
-    background-color: transparent;
     color: #A8998A;
     font-size: 13px;
-    font-weight: 400;  /* Regular */
+    font-weight: 400;
     spacing: 8px;
 }
 #dialogContainer QCheckBox::indicator {
@@ -246,7 +675,9 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
     border-radius: 4px;
     background-color: #221C18;
 }
-#dialogContainer QCheckBox::indicator:hover   { border: 1px solid @accent@; }
+#dialogContainer QCheckBox::indicator:hover {
+    border: 1px solid @accent@;
+}
 #dialogContainer QCheckBox::indicator:checked {
     background-color: #221C18;
     border: 1px solid @accent@;
@@ -254,84 +685,7 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 }
 
 /* ========================================================= */
-/* === 4. ОБЩИЕ ЭЛЕМЕНТЫ (ТАБЛИЦЫ, ПОЛЯ, СКРОЛЛ) ===        */
-/* ========================================================= */
-
-#auctionRoot, #barterRoot, #itemsRoot, #settingsRoot {
-    background-color: #181411;
-}
-
-QPushButton#btnBack {
-    background-color: transparent;
-    color: #A8998A;
-    border: none;
-    font-size: 16px;
-    font-weight: 500;  /* Medium */
-    text-align: left;
-    padding: 5px;
-}
-QPushButton#btnBack:hover {
-    color: @accent@;
-}
-
-QTableWidget {
-    background-color: #181411;
-    alternate-background-color: #1F1A16;
-    gridline-color: transparent;
-    border: none;
-    border-radius: 0;
-    selection-background-color: rgba(240, 169, 59, 0.25);
-    selection-color: #F5E6D3;
-    outline: none;
-}
-QTableWidget::item {
-    padding: 6px 10px;
-    border: none;
-}
-
-QHeaderView::section {
-    background-color: #1F1A16;
-    color: #A8998A;
-    font-size: 12px;
-    font-weight: 600;  /* SemiBold */
-    padding: 8px 10px;
-    border: none;
-    border-bottom: 1px solid #3A2F26;
-}
-
-QComboBox, QLineEdit {
-    background-color: #221C18;
-    color: #F5E6D3;
-    border: 1px solid #3A2F26;
-    border-radius: 6px;
-    padding: 8px 12px;
-    min-width: 150px;
-    font-weight: 400;  /* Regular */
-}
-QComboBox:focus, QLineEdit:focus {
-    border: 1px solid @accent@;
-}
-QComboBox::drop-down {
-    border: none;
-    width: 24px;
-}
-
-QScrollBar:vertical {
-    background: transparent;
-    width: 10px;
-    margin: 0;
-}
-QScrollBar::handle:vertical {
-    background: #3A2F26;
-    border-radius: 5px;
-    min-height: 24px;
-}
-QScrollBar::handle:vertical:hover { background: @accent@; }
-QScrollBar::add-line:vertical,
-QScrollBar::sub-line:vertical { height: 0; }
-
-/* ========================================================= */
-/* === 5. УВЕДОМЛЕНИЯ (TOAST) ===                            */
+/* === 6. ОБЩИЕ ЭЛЕМЕНТЫ ===                                 */
 /* ========================================================= */
 
 #toastError {
@@ -340,7 +694,7 @@ QScrollBar::sub-line:vertical { height: 0; }
     border: 1px solid #E5533D;
     border-radius: 8px;
     padding: 12px 24px;
-    font-weight: 700;  /* Bold */
+    font-weight: 700;
     font-size: 13px;
 }
 #toastSuccess {
@@ -349,36 +703,26 @@ QScrollBar::sub-line:vertical { height: 0; }
     border: 1px solid @accent@;
     border-radius: 8px;
     padding: 12px 24px;
-    font-weight: 700;  /* Bold */
+    font-weight: 700;
     font-size: 13px;
 }
-
-/* ========================================================= */
-/* === 6. ПАНЕЛЬ ТРЕБОВАНИЙ ===                              */
-/* ========================================================= */
 
 #requirementsContainer {
     background-color: #1F1A16;
     border: 1px solid #3A2F26;
     border-radius: 12px;
 }
-
 #rulesTitle {
     color: #F5E6D3;
     font-size: 13px;
-    font-weight: 600;  /* SemiBold */
+    font-weight: 600;
 }
-
-/* ========================================================= */
-/* === 7. МЕНЮ ПРОФИЛЯ ===                                   */
-/* ========================================================= */
 
 #profileMenu {
     background-color: #1F1A16;
     border: 1px solid #3A2F26;
     border-radius: 10px;
 }
-
 #profileMenuItem {
     background-color: transparent;
     color: #A8998A;
@@ -387,201 +731,22 @@ QScrollBar::sub-line:vertical { height: 0; }
     text-align: left;
     padding: 0px 14px;
     font-size: 13px;
-    font-weight: 500;  /* Medium */
+    font-weight: 500;
 }
-#profileMenuItem:hover   { background-color: #221C18; color: @accent@; }
-#profileMenuItem:pressed { background-color: #181411; }
-
-/* ========================================================= */
-/* === 8. AUCTION WINDOW ===                                 */
-/* ========================================================= */
-
-#auctionContent {
-    background-color: #181411;
-}
-
-#navBtn {
-    background-color: transparent;
-    color: #A8998A;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    padding: 0px 18px;
-    font-weight: 600;  /* SemiBold */
-    font-size: 15px;
-    text-align: center;
-}
-#navBtn:hover   { background-color: rgba(245, 230, 211, 0.05); color: #F5E6D3; }
-#navBtn:checked { background-color: transparent; color: @accent@; border: 1px solid @accent@; }
-
-#quickAccessSidebar {
-    background-color: #1F1A16;
-    border-right: 1px solid #3A2F26;
-}
-
-#quickAccessTitle {
-    color: #A8998A;
-    font-size: 11px;
-    font-weight: 600;  /* SemiBold */
-}
-
-#quickAccessBtn {
-    background-color: transparent;
-    color: #A8998A;
-    border: 1px solid transparent;
-    border-left: 4px solid transparent;
-    border-radius: 6px;
-    text-align: left;
-    padding-left: 7px;
-    font-size: 14px;
-    font-weight: 600;  /* SemiBold */
-}
-#quickAccessBtn:hover {
-    background-color: transparent; /* <--- УБРАЛИ ЦВЕТ ПРИ НАВЕДЕНИИ */
-    color: #F5E6D3;
-    border: 1px solid transparent;
-    border-left: 4px solid transparent;
-}
-#quickAccessBtn:checked {
-    background-color: rgba(240, 169, 59, 0.05);
+#profileMenuItem:hover {
+    background-color: #221C18;
     color: @accent@;
-    border: 1px solid @accent@;
-    border-left: 4px solid @accent@;
 }
 
-#categoryBtn {
-    background-color: transparent;
-    color: #A8998A;
-    border: 1px solid transparent;
-    border-left: 4px solid transparent;
-    border-radius: 6px;
-    text-align: left;
-    padding-left: 7px;
-    font-size: 14px;
-    font-weight: 600;  /* SemiBold */
-}
-#categoryBtn:hover {
-    background-color: rgba(245, 230, 211, 0.05);
-    color: #F5E6D3;
-    border: 1px solid transparent;
-    border-left: 4px solid transparent;
-}
-#categoryBtn:checked {
-    background-color: rgba(240, 169, 59, 0.05);
-    color: @accent@;
-    border: 1px solid @accent@;
-    border-left: 4px solid @accent@;
-}
-
-#rightTopBar {
-    background-color: #181411;
-    border-bottom: 1px solid #3A2F26;
-}
-
-#searchEdit {
-    background-color: #1F1A16;
-    color: #F5E6D3;
-    border: 1px solid #3A2F26;
-    border-radius: 6px;
-    padding-left: 10px;
-    font-weight: 400;  /* Regular */
-}
-
-#filterBtn {
-    background-color: transparent;
-    color: #A8998A;
-    border: 1px solid #3A2F26;
-    border-radius: 6px;
-    padding: 0px 12px;
-    text-align: left;
-    font-weight: 500;  /* Medium */
-}
-#filterBtn:hover {
-    background-color: rgba(245, 230, 211, 0.05);
-    color: #F5E6D3;
-    border: 1px solid #4A3F36;
-}
-
-#dropdownPopup {
-    background-color: #1F1A16;
-    border: 1px solid #3A2F26;
-    border-radius: 8px;
-}
-#dropdownItem {
-    background-color: transparent;
-    color: #A8998A;
-    border: none;
-    border-radius: 6px;
-    text-align: left;
-    padding: 0px 10px;
-    font-size: 13px;
-    font-weight: 500;  /* Medium */
-}
-#dropdownItem:hover { background-color: rgba(245, 230, 211, 0.05); color: #F5E6D3; }
-
-/* === Список предметов (плитки) === */
-#itemsList {
-    background-color: transparent;
-    border: none;
-    outline: none;
-    padding: 0px;
-}
-#itemsList::item {
-    background-color: transparent;
-    border: none;
-    padding: 0px;
-}
-#itemsList::item:hover,
-#itemsList::item:selected {
-    background-color: transparent;
-    border: none;
-}
-
-/* === Карточки предметов === */
-#itemCardIconContainer {
-    background-color: #1F1A16;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border: none;
-}
-#itemCardNameContainer {
-    background-color: #181411;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    border: none;
-}
-
-/* === Кнопка избранного на карточке === */
 #cardFavoriteBtn {
     background: transparent;
-    background-color: transparent;
     border: none;
     padding: 0px;
     border-radius: 14px;
 }
 #cardFavoriteBtn:hover {
-    background: rgba(240, 169, 59, 0.15); /* Легкая подсветка при наведении */
+    background: rgba(240, 169, 59, 0.15);
 }
 #cardFavoriteBtn:pressed {
     background: rgba(240, 169, 59, 0.25);
-}
-
-/* Название предмета — жирное, размер 11px. Цвет приходит из кода (динамический) */
-#itemNameLabel {
-    font-size: 11px;
-    font-weight: 700;  /* Bold */
-    background: transparent;
-}
-
-/* Нижняя панель */
-#bottomBar {
-    background-color: #1F1A16;
-    border-top: 1px solid #3A2F26;
-}
-
-/* ========================================================= */
-/* === 9. SETTINGS WINDOW ===                                */
-/* ========================================================= */
-
-#settingsRoot {
-    background-color: #181411;
 }

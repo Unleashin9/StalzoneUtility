@@ -17,8 +17,6 @@
 #include <QShortcut>
 #include <QMouseEvent>
 #include <QEvent>
-#include <QDesktopServices>
-#include <QUrl>
 
 #include "api/StalzoneAPI.h"
 #include "core/GameDatabase.h"
@@ -66,9 +64,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     auto* escShortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
     connect(escShortcut, &QShortcut::activated, this, [this]() {
-        if (m_profileMenu && m_profileMenu->isVisible()) {
-            hideProfileMenu();
-        }
+        if (m_profileMenu && m_profileMenu->isVisible()) hideProfileMenu();
         });
 
     qApp->installEventFilter(this);
@@ -100,10 +96,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
         if (m_profileMenu && m_profileMenu->isVisible() && m_profileBtn) {
             auto* me = static_cast<QMouseEvent*>(event);
             QPoint globalPos = me->globalPosition().toPoint();
-
             QRect menuRect(m_profileMenu->mapToGlobal(QPoint(0, 0)), m_profileMenu->size());
             QRect btnRect(m_profileBtn->mapToGlobal(QPoint(0, 0)), m_profileBtn->size());
-
             if (!menuRect.contains(globalPos) && !btnRect.contains(globalPos)) {
                 hideProfileMenu();
             }
@@ -122,28 +116,35 @@ void MainWindow::setupUi()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // =========================================================
-    // === ВЕРХНЯЯ ПАНЕЛЬ (TOPBAR) ===
-    // =========================================================
+    // === ВЕРХНЯЯ ПАНЕЛЬ ===
     auto* topBar = new QWidget(this);
     topBar->setObjectName("topBar");
     topBar->setFixedHeight(60);
     topBar->setAttribute(Qt::WA_StyledBackground, true);
 
     auto* topBarLayout = new QHBoxLayout(topBar);
-    topBarLayout->setContentsMargins(10, 0, 10, 0);
-    topBarLayout->setSpacing(0);
+    topBarLayout->setContentsMargins(50, 0, 50, 0);
+    topBarLayout->setSpacing(15);
 
     auto* logoBtn = new QPushButton("STALZONE Utility", topBar);
     logoBtn->setObjectName("logoBtn");
-    logoBtn->setIcon(ThemeManager::instance().getIcon(
-        "szutility", ThemeManager::instance().accentColor(), QString()));
+    logoBtn->setIcon(ThemeManager::instance().getIcon("szutility", ThemeManager::instance().accentColor(), QString()));
     logoBtn->setIconSize(QSize(32, 32));
     logoBtn->setCursor(Qt::PointingHandCursor);
     logoBtn->setFlat(true);
     logoBtn->setFocusPolicy(Qt::NoFocus);
     logoBtn->setStyleSheet("background: transparent; border: none;");
     connect(logoBtn, &QPushButton::clicked, this, &MainWindow::onBackToMain);
+
+    // Кнопка "Аукцион" в шапке
+    auto* auctionNavBtn = new QPushButton(" Аукцион", topBar);
+    auctionNavBtn->setObjectName("mainAuctionNavBtn");
+    auctionNavBtn->setIcon(ThemeManager::instance().getIcon("catalog", QColor("#A8998A"), "AuctionWindow"));
+    auctionNavBtn->setIconSize(QSize(20, 20));
+    auctionNavBtn->setCursor(Qt::PointingHandCursor);
+    auctionNavBtn->setMinimumHeight(40);
+    auctionNavBtn->setMinimumWidth(150);
+    connect(auctionNavBtn, &QPushButton::clicked, this, &MainWindow::onAuctionClicked);
 
     auto* btnWidget = new QWidget(topBar);
     auto* btnLayout = new QHBoxLayout(btnWidget);
@@ -152,7 +153,7 @@ void MainWindow::setupUi()
 
     m_profileBtn = new QPushButton("ВОЙТИ | ЗАРЕГИСТРИРОВАТЬСЯ", btnWidget);
     m_profileBtn->setObjectName("btnLogin");
-    m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOff", QColor("#000000")));
+    m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOff", QColor("#000000"), "MainWindow"));
     m_profileBtn->setIconSize(QSize(18, 18));
     m_profileBtn->setCursor(Qt::PointingHandCursor);
     m_profileBtn->setFixedSize(300, 36);
@@ -160,7 +161,7 @@ void MainWindow::setupUi()
 
     auto* btnExit = new QToolButton(btnWidget);
     btnExit->setObjectName("btnExit");
-    btnExit->setIcon(ThemeManager::instance().getIcon("exitBtn", QColor("#000000")));
+    btnExit->setIcon(ThemeManager::instance().getIcon("exitBtn", QColor("#000000"), "MainWindow"));
     btnExit->setIconSize(QSize(20, 20));
     btnExit->setFixedSize(36, 36);
     btnExit->setCursor(Qt::PointingHandCursor);
@@ -170,58 +171,27 @@ void MainWindow::setupUi()
     btnLayout->addWidget(btnExit);
 
     topBarLayout->addWidget(logoBtn, 0, Qt::AlignVCenter);
+    topBarLayout->addWidget(auctionNavBtn, 0, Qt::AlignVCenter);
     topBarLayout->addStretch();
     topBarLayout->addWidget(btnWidget, 0, Qt::AlignVCenter);
 
     mainLayout->addWidget(topBar);
 
-    // =========================================================
-    // === СРЕДНЯЯ ЗОНА (SIDEBAR + CONTENT) ===
-    // =========================================================
-    auto* middleLayout = new QHBoxLayout();
-    middleLayout->setContentsMargins(0, 0, 0, 0);
-    middleLayout->setSpacing(0);
-
-    // --- ЛЕВЫЙ САЙДБАР ---
-    auto* sidebar = new QWidget(this);
-    sidebar->setObjectName("mainSidebar");
-    sidebar->setFixedWidth(220);
-    sidebar->setAttribute(Qt::WA_StyledBackground, true);
-
-    auto* sidebarLayout = new QVBoxLayout(sidebar);
-    sidebarLayout->setContentsMargins(15, 20, 15, 20);
-    sidebarLayout->setSpacing(10);
-
-    auto* auctionBtn = new QPushButton(" Аукцион", sidebar);
-    auctionBtn->setObjectName("sidebarActionBtn"); // Специальный класс для акцентной кнопки
-    auctionBtn->setIcon(ThemeManager::instance().getIcon("auction", QColor("#000000"), "MainWindow"));
-    auctionBtn->setIconSize(QSize(20, 20));
-    auctionBtn->setCursor(Qt::PointingHandCursor);
-    auctionBtn->setMinimumHeight(44);
-    connect(auctionBtn, &QPushButton::clicked, this, &MainWindow::onAuctionClicked);
-
-    sidebarLayout->addWidget(auctionBtn);
-    sidebarLayout->addStretch();
-
-    middleLayout->addWidget(sidebar);
-
-    // --- ЦЕНТРАЛЬНЫЙ КОНТЕНТ ---
+    // === ЦЕНТРАЛЬНАЯ ЧАСТЬ ===
     auto* contentWidget = new QWidget(this);
-    contentWidget->setObjectName("mainContent");
     auto* contentLayout = new QVBoxLayout(contentWidget);
     contentLayout->setContentsMargins(20, 20, 20, 20);
+    contentLayout->setSpacing(20);
     contentLayout->setAlignment(Qt::AlignCenter);
 
-    auto* welcomeLabel = new QLabel("Добро пожаловать в STALZONE Utility!");
-    welcomeLabel->setStyleSheet("color: #A8998A; font-size: 24px; font-weight: bold;");
+    auto* welcomeLabel = new QLabel("Добро пожаловать в STALZONE Utility!", contentWidget);
+    welcomeLabel->setStyleSheet("font-size: 24px; font-weight: bold; color: #A8998A;");
+    welcomeLabel->setAlignment(Qt::AlignCenter);
     contentLayout->addWidget(welcomeLabel);
 
-    middleLayout->addWidget(contentWidget, 1); // 1 = растягивается
-    mainLayout->addLayout(middleLayout, 1);
+    mainLayout->addWidget(contentWidget, 1);
 
-    // =========================================================
-    // === НИЖНЯЯ ПАНЕЛЬ (BOTTOMBAR) ===
-    // =========================================================
+    // === НИЖНЯЯ ПАНЕЛЬ ===
     auto* bottomBar = new QWidget(this);
     bottomBar->setObjectName("bottomBar");
     bottomBar->setFixedHeight(60);
@@ -231,29 +201,27 @@ void MainWindow::setupUi()
     bottomBarLayout->setContentsMargins(50, 0, 50, 0);
     bottomBarLayout->setSpacing(20);
 
-    auto* versionLabel = new QLabel("STALZONE Utility v0.1.0");
-    versionLabel->setStyleSheet("color: #A8998A; font-size: 12px;");
+    auto* versionLabel = new QLabel("STALZONE Utility v0.1.0", bottomBar);
+    versionLabel->setStyleSheet("color: #4A3F36; font-size: 11px;");
 
-    auto* discordBtn = new QToolButton(bottomBar);
-    discordBtn->setObjectName("btnDiscord");
-    discordBtn->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
-    discordBtn->setIconSize(QSize(24, 24));
-    discordBtn->setFixedSize(40, 40);
-    discordBtn->setCursor(Qt::PointingHandCursor);
-    connect(discordBtn, &QToolButton::clicked, this, []() {
-        QDesktopServices::openUrl(QUrl("https://discord.gg/zYsh9xPefd"));
-        });
+    auto* btnDiscord = new QToolButton(bottomBar);
+    btnDiscord->setObjectName("btnDiscord");
+    // ИСПРАВЛЕНО: "discord", пустая папка
+    btnDiscord->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
+    btnDiscord->setIconSize(QSize(24, 24));
+    btnDiscord->setFixedSize(40, 40);
+    btnDiscord->setCursor(Qt::PointingHandCursor);
 
     bottomBarLayout->addWidget(versionLabel);
     bottomBarLayout->addStretch();
-    bottomBarLayout->addWidget(discordBtn, 0, Qt::AlignVCenter);
+    bottomBarLayout->addWidget(btnDiscord);
 
     mainLayout->addWidget(bottomBar);
 }
 
 void MainWindow::updateIcons()
 {
-    auto accent = ThemeManager::instance().accentColor();
+    QColor accent = ThemeManager::instance().accentColor();
     QColor iconColor = accent.lightness() > 128 ? QColor("#000000") : QColor("#FFFFFF");
 
     if (auto* logo = findChild<QPushButton*>("logoBtn")) {
@@ -261,13 +229,13 @@ void MainWindow::updateIcons()
     }
     if (m_profileBtn) {
         m_profileBtn->setIcon(ThemeManager::instance().getIcon(
-            m_currentUser.isEmpty() ? "profileBtnOff" : "profileBtnOn", iconColor));
+            m_currentUser.isEmpty() ? "profileBtnOff" : "profileBtnOn", iconColor, "MainWindow"));
     }
     if (auto* exitBtn = findChild<QToolButton*>("btnExit")) {
-        exitBtn->setIcon(ThemeManager::instance().getIcon("exitBtn", iconColor));
+        exitBtn->setIcon(ThemeManager::instance().getIcon("exitBtn", iconColor, "MainWindow"));
     }
     if (auto* discordBtn = findChild<QToolButton*>("btnDiscord")) {
-        // ПУСТАЯ СТРОКА
+        // ИСПРАВЛЕНО: "discord", пустая папка
         discordBtn->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
     }
 }
@@ -436,11 +404,11 @@ void MainWindow::updateProfileButton()
 {
     if (m_currentUser.isEmpty()) {
         m_profileBtn->setText("ВОЙТИ | ЗАРЕГИСТРИРОВАТЬСЯ");
-        m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOff", QColor("#000000")));
+        m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOff", QColor("#000000"), "MainWindow"));
     }
     else {
         m_profileBtn->setText("ЛИЧНЫЙ КАБИНЕТ");
-        m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOn", QColor("#000000")));
+        m_profileBtn->setIcon(ThemeManager::instance().getIcon("profileBtnOn", QColor("#000000"), "MainWindow"));
     }
 }
 
@@ -459,15 +427,9 @@ void MainWindow::removeBlurEffect()
 
 void MainWindow::showSubWindow(QWidget* window)
 {
-    // 1. Показываем новое окно на весь экран
     window->showFullScreen();
     window->raise();
     window->activateWindow();
-
-    // 2. Даём Qt обработать события отрисовки, чтобы окно успело нарисоваться
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-
-    // 3. Только после этого скрываем текущее
     hide();
 }
 
@@ -524,5 +486,4 @@ void MainWindow::onBackToMain()
     showFullScreen();
     raise();
     activateWindow();
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }

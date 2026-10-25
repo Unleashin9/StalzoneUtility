@@ -37,6 +37,8 @@
 		<file>resources/icons/SettingsWindow/subscriptions.svg</file>
 		<file>resources/icons/SettingsWindow/balance.svg</file>
 		<file>resources/icons/SettingsWindow/settings.svg</file>
+		<file>resources/icons/SettingsWindow/passwordEditOpen.svg</file>
+		<file>resources/icons/SettingsWindow/passwordEditClose.svg</file>
 
 		<file>resources/icons/SettingsWindow/password.svg</file>
 		<file>resources/icons/SettingsWindow/exbo.svg</file>

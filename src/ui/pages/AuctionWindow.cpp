@@ -93,7 +93,7 @@ void AuctionWindow::setupUi()
     topBar->setAttribute(Qt::WA_StyledBackground, true);
 
     auto* topBarLayout = new QHBoxLayout(topBar);
-    topBarLayout->setContentsMargins(10, 0, 10, 0);
+    topBarLayout->setContentsMargins(50, 0, 50, 0);
     topBarLayout->setSpacing(15);
 
     auto* logoBtn = new QPushButton("STALZONE Utility", topBar);
