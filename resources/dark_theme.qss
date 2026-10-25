@@ -506,3 +506,32 @@ QPushButton#footerLink:pressed {
 #innerContent {
     background-color: #181411;
 }
+
+/* ========================================================= */
+/* === 14. SETTINGS WINDOW (ПАНЕЛЬ ПРОФИЛЯ) ===             */
+/* ========================================================= */
+
+#profilePanel {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 12px;
+}
+
+#avatarImage {
+    background-color: #141110;
+    border: none;
+    border-radius: 32px; /* Делает аватар круглым (половина от 64px) */
+}
+
+#accountNameLabel {
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: bold;
+    background: transparent;
+}
+
+#accountDetailsLabel {
+    color: #A8998A;
+    font-size: 13px;
+    background: transparent;
+}

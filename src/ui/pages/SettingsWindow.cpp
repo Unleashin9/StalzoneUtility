@@ -11,6 +11,13 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QStackedWidget>
+#include <QFileDialog>
+#include <QStandardPaths>
+#include <QDir>
+#include <QFile>
+#include <QCoreApplication>
+#include <QPainter>
+#include <QPainterPath>
 
 SettingsWindow::SettingsWindow(QWidget* parent) : QWidget(parent)
 {
@@ -31,6 +38,16 @@ void SettingsWindow::setUserInfo(const UserInfo& info)
     if (m_usernameLabel) {
         m_usernameLabel->setText(m_userInfo.username);
     }
+    if (m_accountNameLabel) {
+        m_accountNameLabel->setText(m_userInfo.username);
+    }
+    if (m_accountDetailsLabel) {
+        m_accountDetailsLabel->setText(QString("Почта не подключена | ID: %1 | Дата регистрации: %2")
+            .arg(m_userInfo.id)
+            .arg(m_userInfo.createdAt));
+    }
+
+    loadAvatar();
 }
 
 void SettingsWindow::setupUi()
@@ -39,9 +56,7 @@ void SettingsWindow::setupUi()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // =========================================================
     // === ВЕРХНЯЯ ПАНЕЛЬ ===
-    // =========================================================
     auto* topBar = new QWidget(this);
     topBar->setObjectName("topBar");
     topBar->setFixedHeight(60);
@@ -83,14 +98,12 @@ void SettingsWindow::setupUi()
 
     mainLayout->addWidget(topBar);
 
-    // =========================================================
-    // === СРЕДНЯЯ ЗОНА (САЙДБАР + КОНТЕНТ) ===
-    // =========================================================
+    // === СРЕДНЯЯ ЗОНА ===
     auto* middleLayout = new QHBoxLayout();
     middleLayout->setContentsMargins(0, 0, 0, 0);
     middleLayout->setSpacing(0);
 
-    // --- ЛЕВЫЙ САЙДБАР ---
+    // --- САЙДБАР ---
     auto* sidebar = new QWidget(this);
     sidebar->setObjectName("settingsSidebar");
     sidebar->setFixedWidth(220);
@@ -100,7 +113,6 @@ void SettingsWindow::setupUi()
     sidebarLayout->setContentsMargins(15, 20, 15, 20);
     sidebarLayout->setSpacing(4);
 
-    // Хелпер: создаёт кнопку навигации с переключением страницы
     auto createSidebarItem = [this, sidebar](const QString& text, const QString& iconName, int pageIndex, const QString& pageTitle) -> QPushButton* {
         auto* btn = new QPushButton(" " + text, sidebar);
         btn->setObjectName("sidebarItem");
@@ -118,7 +130,6 @@ void SettingsWindow::setupUi()
         updateIcon(false);
         connect(btn, &QPushButton::toggled, btn, updateIcon);
 
-        // Переключение страницы и заголовка при клике
         connect(btn, &QPushButton::clicked, this, [this, pageIndex, pageTitle]() {
             if (m_pages) m_pages->setCurrentIndex(pageIndex);
             if (m_pageTitleLabel) m_pageTitleLabel->setText(pageTitle);
@@ -127,14 +138,13 @@ void SettingsWindow::setupUi()
         return btn;
         };
 
-    // --- СЕКЦИЯ "АККАУНТ" ---
     auto* accountLabel = new QLabel("АККАУНТ", sidebar);
     accountLabel->setObjectName("sidebarSectionTitle");
     sidebarLayout->addWidget(accountLabel);
     sidebarLayout->addSpacing(4);
 
     auto* overviewBtn = createSidebarItem("Обзор", "review", 0, "Информация об аккаунте");
-    overviewBtn->setChecked(true); // По умолчанию открыт Обзор
+    overviewBtn->setChecked(true);
     sidebarLayout->addWidget(overviewBtn);
 
     auto* securityBtn = createSidebarItem("Безопасность", "security", 1, "Безопасность");
@@ -148,7 +158,6 @@ void SettingsWindow::setupUi()
 
     sidebarLayout->addSpacing(16);
 
-    // --- СЕКЦИЯ "ПОДПИСКА" ---
     auto* subscriptionLabel = new QLabel("ПОДПИСКА", sidebar);
     subscriptionLabel->setObjectName("sidebarSectionTitle");
     sidebarLayout->addWidget(subscriptionLabel);
@@ -162,7 +171,6 @@ void SettingsWindow::setupUi()
 
     sidebarLayout->addSpacing(16);
 
-    // --- СЕКЦИЯ "ПРИЛОЖЕНИЕ" ---
     auto* appLabel = new QLabel("ПРИЛОЖЕНИЕ", sidebar);
     appLabel->setObjectName("sidebarSectionTitle");
     sidebarLayout->addWidget(appLabel);
@@ -173,27 +181,47 @@ void SettingsWindow::setupUi()
 
     sidebarLayout->addStretch();
 
+    // === НИЖНЯЯ ЧАСТЬ САЙДБАРА ===
+    // 1. Разделительная линия
+    auto* divider = new QFrame(sidebar);
+    divider->setObjectName("sidebarDivider");
+    divider->setFixedHeight(1);
+    divider->setStyleSheet("background-color: #3A2F26; margin: 0px 5px;");
+    sidebarLayout->addWidget(divider);
+    sidebarLayout->addSpacing(10);
+
+    // 2. Заголовок "АККАУНТ"
     auto* bottomAccountLabel = new QLabel("АККАУНТ", sidebar);
     bottomAccountLabel->setObjectName("sidebarSectionTitle");
     sidebarLayout->addWidget(bottomAccountLabel);
     sidebarLayout->addSpacing(4);
 
+    // 3. Аватар + Имя
+    auto* userRowLayout = new QHBoxLayout();
+    userRowLayout->setContentsMargins(0, 0, 0, 0);
+    userRowLayout->setSpacing(6);
+
+    m_sidebarAvatarLabel = new QLabel(sidebar);
+    m_sidebarAvatarLabel->setFixedSize(32, 32); // Маленький аватар
+
     m_usernameLabel = new QLabel(m_userInfo.username, sidebar);
     m_usernameLabel->setObjectName("sidebarUsername");
-    sidebarLayout->addWidget(m_usernameLabel);
+
+    userRowLayout->addWidget(m_sidebarAvatarLabel);
+    userRowLayout->addWidget(m_usernameLabel);
+    userRowLayout->addStretch();
+
+    sidebarLayout->addLayout(userRowLayout);
 
     middleLayout->addWidget(sidebar);
 
-    // =========================================================
-    // === ПРАВАЯ ЧАСТЬ (ЗАГОЛОВОК + СТРАНИЦЫ) ===
-    // =========================================================
+    // === ПРАВАЯ ЧАСТЬ ===
     auto* contentWidget = new QWidget(this);
     contentWidget->setObjectName("settingsContent");
     auto* contentLayout = new QVBoxLayout(contentWidget);
     contentLayout->setContentsMargins(0, 0, 0, 0);
     contentLayout->setSpacing(0);
 
-    // --- ПАНЕЛЬ-ЗАГОЛОВОК СТРАНИЦЫ ---
     auto* headerPanel = new QWidget(this);
     headerPanel->setObjectName("contentHeaderPanel");
     headerPanel->setFixedHeight(60);
@@ -206,24 +234,60 @@ void SettingsWindow::setupUi()
     m_pageTitleLabel->setObjectName("pageTitle");
 
     headerPanelLayout->addWidget(m_pageTitleLabel);
-    headerPanelLayout->addStretch(); // Убрали правый текст, прижали к левому краю
+    headerPanelLayout->addStretch();
 
     contentLayout->addWidget(headerPanel);
 
-    // --- СТОПКА СТРАНИЦ (QStackedWidget) ---
     m_pages = new QStackedWidget(this);
     m_pages->setObjectName("pagesStack");
 
-    // Страница 0: Обзор (информация об аккаунте)
+    // --- СТРАНИЦА 0: ОБЗОР ---
     auto* pageOverview = new QWidget();
     pageOverview->setObjectName("innerContent");
     auto* overviewLayout = new QVBoxLayout(pageOverview);
-    overviewLayout->setContentsMargins(30, 20, 30, 20);
+    overviewLayout->setContentsMargins(10, 15, 10, 15);
     overviewLayout->setAlignment(Qt::AlignTop);
-    // (Здесь потом добавим карточки с ID, датой и т.д.)
+
+    auto* profilePanel = new QWidget(pageOverview);
+    profilePanel->setObjectName("profilePanel");
+    profilePanel->setAttribute(Qt::WA_StyledBackground, true);
+
+    auto* profileLayout = new QHBoxLayout(profilePanel);
+    profileLayout->setContentsMargins(20, 20, 20, 20);
+    profileLayout->setSpacing(20);
+
+    m_avatarLabel = new QLabel(profilePanel);
+    m_avatarLabel->setObjectName("avatarImage");
+    m_avatarLabel->setFixedSize(64, 64);
+
+    auto* textLayout = new QVBoxLayout();
+    textLayout->setSpacing(4);
+    textLayout->setAlignment(Qt::AlignVCenter);
+
+    m_accountNameLabel = new QLabel("Загрузка...", profilePanel);
+    m_accountNameLabel->setObjectName("accountNameLabel");
+
+    m_accountDetailsLabel = new QLabel("Загрузка...", profilePanel);
+    m_accountDetailsLabel->setObjectName("accountDetailsLabel");
+
+    textLayout->addWidget(m_accountNameLabel);
+    textLayout->addWidget(m_accountDetailsLabel);
+
+    auto* changeAvatarBtn = new QPushButton("Изменить аватар", profilePanel);
+    changeAvatarBtn->setObjectName("outlineButton");
+    changeAvatarBtn->setCursor(Qt::PointingHandCursor);
+    changeAvatarBtn->setMinimumHeight(36);
+    connect(changeAvatarBtn, &QPushButton::clicked, this, &SettingsWindow::onChangeAvatarClicked);
+
+    profileLayout->addWidget(m_avatarLabel);
+    profileLayout->addLayout(textLayout);
+    profileLayout->addStretch();
+    profileLayout->addWidget(changeAvatarBtn);
+
+    overviewLayout->addWidget(profilePanel);
     m_pages->addWidget(pageOverview);
 
-    // Страницы 1-6 (пока пустые заглушки, но готовы к наполнению)
+    // Заглушки
     for (int i = 1; i <= 6; ++i) {
         auto* page = new QWidget();
         page->setObjectName("innerContent");
@@ -235,9 +299,7 @@ void SettingsWindow::setupUi()
 
     mainLayout->addLayout(middleLayout, 1);
 
-    // =========================================================
     // === НИЖНЯЯ ПАНЕЛЬ ===
-    // =========================================================
     auto* bottomBar = new QWidget(this);
     bottomBar->setObjectName("bottomBar");
     bottomBar->setFixedHeight(60);
@@ -277,6 +339,86 @@ void SettingsWindow::setupUi()
     bottomBarLayout->addWidget(discordBtn, 0, Qt::AlignVCenter);
 
     mainLayout->addWidget(bottomBar);
+}
+
+void SettingsWindow::onChangeAvatarClicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, "Выберите аватар", "", "Изображения (*.png *.jpg *.jpeg)");
+    if (fileName.isEmpty()) return;
+
+    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QString avatarDir = appDataPath + "/avatars";
+    QDir().mkpath(avatarDir);
+
+    QString destPath = QString("%1/user_%2.png").arg(avatarDir).arg(m_userInfo.id);
+
+    QFile::remove(destPath);
+
+    if (QFile::copy(fileName, destPath)) {
+        Toast::showMessage(this, "Аватар успешно обновлен!", false);
+        loadAvatar();
+    }
+    else {
+        Toast::showMessage(this, "Ошибка при сохранении аватара", true);
+    }
+}
+
+void SettingsWindow::loadAvatar()
+{
+    if (!m_avatarLabel || !m_sidebarAvatarLabel) return;
+
+    QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QString destPath = QString("%1/avatars/user_%2.png").arg(appDataPath).arg(m_userInfo.id);
+
+    QPixmap sourcePixmap;
+    if (QFile::exists(destPath)) {
+        sourcePixmap.load(destPath);
+    }
+    else {
+        QIcon defaultIcon = ThemeManager::instance().getIcon("profileBtnOn", QColor("#A8998A"), "MainWindow");
+        sourcePixmap = defaultIcon.pixmap(128, 128); // Берем побольше для качества
+    }
+
+    // Обрезаем в круг для основной панели (64x64)
+    m_avatarLabel->setPixmap(getCircularPixmap(sourcePixmap, 64));
+
+    // Обрезаем в круг для сайдбара (32x32)
+    m_sidebarAvatarLabel->setPixmap(getCircularPixmap(sourcePixmap, 32));
+}
+
+// Вспомогательная функция для идеального вырезания круга
+QPixmap SettingsWindow::getCircularPixmap(const QPixmap& source, int size)
+{
+    QPixmap target(size, size);
+    target.fill(Qt::transparent);
+
+    QPainter painter(&target);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    // 1. Вырезаем круг
+    QPainterPath path;
+    path.addEllipse(0, 0, size, size);
+    painter.setClipPath(path);
+
+    // 2. Масштабируем и рисуем картинку
+    QPixmap scaled = source.scaled(size, size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    int x = (scaled.width() - size) / 2;
+    int y = (scaled.height() - size) / 2;
+    painter.drawPixmap(0, 0, scaled, x, y, size, size);
+
+    // 3. Рисуем обводку (акцентный цвет, 1px)
+    painter.setClipping(false); // Отключаем клип, чтобы рамка рисовалась
+    QPen pen(ThemeManager::instance().accentColor());
+    pen.setWidthF(1.0);
+    painter.setPen(pen);
+    painter.setBrush(Qt::NoBrush);
+
+    // Сдвигаем на 0.5px, чтобы 1px-рамка идеально вписалась по краю
+    QRectF borderRect(0.5, 0.5, size - 1.0, size - 1.0);
+    painter.drawEllipse(borderRect);
+
+    return target;
 }
 
 void SettingsWindow::showEvent(QShowEvent* event)

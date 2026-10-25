@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <QWidget>
+#include <QPixmap>
 #include "core/DBManager.h"
 
 class QLabel;
@@ -20,12 +21,23 @@ signals:
 protected:
     void showEvent(QShowEvent* event) override;
 
+private slots:
+    void onChangeAvatarClicked();
+
 private:
     void setupUi();
+    void loadAvatar();
+    QPixmap getCircularPixmap(const QPixmap& source, int size); // <--- НОВЫЙ ХЕЛПЕР
 
     QLabel* m_userInfoLabel = nullptr;
     QLabel* m_usernameLabel = nullptr;
-    QLabel* m_pageTitleLabel = nullptr;    // <--- НОВОЕ
-    QStackedWidget* m_pages = nullptr;     // <--- НОВОЕ
+    QLabel* m_pageTitleLabel = nullptr;
+    QStackedWidget* m_pages = nullptr;
+
+    QLabel* m_avatarLabel = nullptr;
+    QLabel* m_sidebarAvatarLabel = nullptr; // <--- Аватар в сайдбаре
+    QLabel* m_accountNameLabel = nullptr;
+    QLabel* m_accountDetailsLabel = nullptr;
+
     UserInfo m_userInfo;
 };
