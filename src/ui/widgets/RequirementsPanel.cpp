@@ -6,13 +6,14 @@
 #include <QLabel>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
-#include <QDebug>
 
 RequirementsPanel::RequirementsPanel(QWidget* parent) : QWidget(parent)
 {
+    setObjectName("requirementsPanel");
     setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_ShowWithoutActivating);
+    setAttribute(Qt::WA_NoSystemBackground);
 
     setupUi();
     resetAll();
@@ -21,10 +22,12 @@ RequirementsPanel::RequirementsPanel(QWidget* parent) : QWidget(parent)
 void RequirementsPanel::setupUi()
 {
     auto* mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setContentsMargins(35, 35, 35, 35);
+    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
 
     auto* container = new QWidget(this);
     container->setObjectName("requirementsContainer");
+    container->setFixedWidth(290);
     mainLayout->addWidget(container);
 
     auto* shadow = new QGraphicsDropShadowEffect(this);
@@ -106,10 +109,6 @@ void RequirementsPanel::setupUi()
         layout->addLayout(row);
         m_icons.append(icon);
     }
-
-    setFixedWidth(290);
-    adjustSize();
-    setFixedHeight(height());
 }
 
 void RequirementsPanel::setRuleValid(int index, bool isValid)

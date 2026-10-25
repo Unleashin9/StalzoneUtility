@@ -307,6 +307,9 @@ void MainWindow::unblockMainWindow()
 
 void MainWindow::positionDialog(QWidget* dialog)
 {
+    // ПРИНУДИТЕЛЬНО пересчитываем размеры перед позиционированием
+    dialog->adjustSize();
+
     int margin = 50;
     int x = this->x() + this->width() - dialog->width() - margin;
     int y = this->y() + (this->height() - dialog->height()) / 2;

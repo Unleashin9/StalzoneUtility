@@ -18,31 +18,30 @@
 #include <QShowEvent>
 #include <QHideEvent>
 #include <QKeyEvent>
-#include <QDebug> // <--- для диагностики
 
 RegisterWindow::RegisterWindow(QWidget* parent) : QDialog(parent)
 {
+    setObjectName("registerDialog");
     setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
-    setFixedWidth(420);
+    setAttribute(Qt::WA_NoSystemBackground);
     setFocusPolicy(Qt::StrongFocus);
 
-    // Создаём панель требований
     m_reqPanel = new RequirementsPanel(this);
     m_reqPanel->hide();
 
     setupUi();
-    adjustSize();
-    setFixedHeight(height());
 }
 
 void RegisterWindow::setupUi()
 {
     auto* mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setContentsMargins(35, 35, 35, 35);
+    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
 
     auto* container = new QWidget(this);
     container->setObjectName("dialogContainer");
+    container->setFixedWidth(420);
     mainLayout->addWidget(container);
 
     auto* shadow = new QGraphicsDropShadowEffect(this);
@@ -245,15 +244,11 @@ void RegisterWindow::showEvent(QShowEvent* event)
 {
     QDialog::showEvent(event);
     if (m_reqPanel) {
+        m_reqPanel->adjustSize();
+        // Сдвигаем панель так, чтобы визуальный зазор (без учета прозрачных теней) был 20px
+        m_reqPanel->move(x() - m_reqPanel->width() + 50, y());
         m_reqPanel->show();
         m_reqPanel->raise();
-        m_reqPanel->move(x() - m_reqPanel->width() - 15, y());
-        QTimer::singleShot(0, this, [this]() {
-            // После того как окно полностью активировалось — поднимаем панель ещё раз
-            if (m_reqPanel && m_reqPanel->isVisible()) {
-                m_reqPanel->raise();
-            }
-            });
     }
 }
 

@@ -17,6 +17,15 @@
 /* === 1. ГЛОБАЛЬНЫЕ НАСТРОЙКИ ===                           */
 /* ========================================================= */
 
+/* Принудительная прозрачность для всех кастомных окон, чтобы не было темных углов */
+QDialog, 
+#loginDialog, 
+#registerDialog, 
+#requirementsPanel {
+    background: transparent;
+    background-color: transparent;
+}
+
 QWidget {
     background-color: #181411;
     color: #A8998A;
@@ -213,6 +222,8 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 }
 
 #dialogContainer QCheckBox {
+    background: transparent;
+    background-color: transparent;
     color: #A8998A;
     font-size: 13px;
     spacing: 8px;
@@ -228,8 +239,8 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
     border: 1px solid @accent@;
 }
 #dialogContainer QCheckBox::indicator:checked {
-    background-color: transparent;
-    border: 1px solid #3A2F26;
+    background-color: #221C18;
+    border: 1px solid @accent@;
     image: url("@rememberMeIcon@");
 }
 
@@ -317,17 +328,18 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 /* ========================================================= */
 
 #toastError {
-    background-color: rgba(31, 26, 22, 0.95);
-    color: #E5533D;
+    background-color: #1F1A16;
+    color: #E5533D;          /* Кирпично-красный */
     border: 1px solid #E5533D;
     border-radius: 8px;
     padding: 12px 24px;
     font-weight: bold;
     font-size: 13px;
 }
+
 #toastSuccess {
-    background-color: rgba(31, 26, 22, 0.95);
-    color: @accent@;
+    background-color: #1F1A16;
+    color: @accent@;         /* Янтарный (берется из ThemeManager) */
     border: 1px solid @accent@;
     border-radius: 8px;
     padding: 12px 24px;
