@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <memory>
 #include <QString>
+#include "core/DBManager.h"
 
 class QPushButton;
 class QGraphicsBlurEffect;
@@ -14,6 +15,7 @@ class BarterWindow;
 class ItemsWindow;
 class LoginWindow;
 class RegisterWindow;
+class SettingsWindow;
 class ProfileMenu;
 
 class MainWindow : public QMainWindow
@@ -38,6 +40,7 @@ private slots:
     void onShowRegisterWindow();
     void onShowLoginWindow();
     void onLogout();
+    void onOpenUserSettings();
 
 private:
     void setupUi();
@@ -48,6 +51,7 @@ private:
     void positionDialog(QWidget* dialog);
     void blockMainWindow();
     void unblockMainWindow();
+    void updateIcons();
 
     void showProfileMenu();
     void hideProfileMenu();
@@ -58,6 +62,7 @@ private:
     std::unique_ptr<AuctionWindow> m_auctionWindow;
     std::unique_ptr<BarterWindow>  m_barterWindow;
     std::unique_ptr<ItemsWindow>   m_itemsWindow;
+    std::unique_ptr<SettingsWindow> m_settingsWindow;
 
     LoginWindow* m_loginWindow = nullptr;
     RegisterWindow* m_registerWindow = nullptr;
@@ -65,4 +70,5 @@ private:
 
     QPushButton* m_profileBtn = nullptr;
     QString m_currentUser;
+    UserInfo m_currentUserInfo;
 };

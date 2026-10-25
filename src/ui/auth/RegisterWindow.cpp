@@ -321,6 +321,13 @@ void RegisterWindow::onRegisterClicked()
         return;
     }
 
+    // Сначала проверяем, занят ли логин
+    if (DBManager::instance().userExists(user)) {
+        Toast::showMessage(this, QString("Логин %1 занят!").arg(user), true);
+        return;
+    }
+
+    // Если логин свободен — пытаемся зарегистрировать
     if (DBManager::instance().registerUser(user, pass)) {
         Toast::showMessage(this, QString("Аккаунт %1 создан!").arg(user), false);
         QTimer::singleShot(1500, this, [this, user]() {
@@ -329,7 +336,8 @@ void RegisterWindow::onRegisterClicked()
             });
     }
     else {
-        Toast::showMessage(this, QString("Логин %1 занят!").arg(user), true);
+        // Если не получилось, но логин был свободен — значит, ошибка БД
+        Toast::showMessage(this, "Ошибка базы данных при регистрации", true);
     }
 }
 

@@ -26,6 +26,7 @@
 #include "ui/pages/AuctionWindow.h"
 #include "ui/pages/BarterWindow.h"
 #include "ui/pages/ItemsWindow.h"
+#include "ui/pages/SettingsWindow.h"
 #include "ui/auth/LoginWindow.h"
 #include "ui/auth/RegisterWindow.h"
 #include "ui/widgets/ProfileMenu.h"
@@ -35,7 +36,7 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
-    setWindowTitle("SZUtility");
+    setWindowTitle("STALZONE Utility");
     resize(1200, 750);
 
     DBManager::instance().init();
@@ -51,10 +52,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     m_profileMenu = new ProfileMenu(this);
 
-    connect(m_profileMenu, &ProfileMenu::settingsUserClicked, this, [this]() {
-        hideProfileMenu();
-        Toast::showMessage(this, "Настройки пользователя (в разработке)", false);
-        });
+    connect(m_profileMenu, &ProfileMenu::settingsUserClicked, this, &MainWindow::onOpenUserSettings);
     connect(m_profileMenu, &ProfileMenu::settingsAppClicked, this, [this]() {
         hideProfileMenu();
         Toast::showMessage(this, "Настройки приложения (в разработке)", false);
@@ -80,6 +78,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_registerWindow, &RegisterWindow::registrationSuccessful, this, &MainWindow::onShowLoginWindow);
     connect(m_registerWindow, &RegisterWindow::loginRequested, this, &MainWindow::onShowLoginWindow);
     connect(m_registerWindow, &RegisterWindow::windowClosed, this, &MainWindow::removeBlurEffect);
+
+    connect(&ThemeManager::instance(), &ThemeManager::themeChanged, this, &MainWindow::updateIcons);
 
     QSettings settings;
     if (settings.value(AuthSettings::kRememberMe, false).toBool()) {
@@ -120,9 +120,6 @@ void MainWindow::setupUi()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // =========================================================
-    // === TOP BAR (60px) ===
-    // =========================================================
     auto* topBar = new QWidget(this);
     topBar->setObjectName("topBar");
     topBar->setFixedHeight(60);
@@ -132,7 +129,7 @@ void MainWindow::setupUi()
     topBarLayout->setContentsMargins(10, 0, 10, 0);
     topBarLayout->setSpacing(0);
 
-    auto* logoBtn = new QPushButton("SZUtility", topBar);
+    auto* logoBtn = new QPushButton("STALZONE Utility", topBar);
     logoBtn->setObjectName("logoBtn");
     logoBtn->setIcon(ThemeManager::instance().getIcon(
         "szutility",
@@ -175,9 +172,6 @@ void MainWindow::setupUi()
 
     mainLayout->addWidget(topBar);
 
-    // =========================================================
-    // === КОНТЕНТ (10px отступы) ===
-    // =========================================================
     auto* contentWidget = new QWidget(this);
     auto* contentLayout = new QVBoxLayout(contentWidget);
     contentLayout->setContentsMargins(10, 10, 10, 10);
@@ -205,9 +199,25 @@ void MainWindow::setupUi()
     mainLayout->addWidget(contentWidget);
 }
 
-// =========================================================
-// МЕНЮ ПРОФИЛЯ
-// =========================================================
+void MainWindow::updateIcons()
+{
+    auto accent = ThemeManager::instance().accentColor();
+    QColor iconColor = accent.lightness() > 128 ? QColor("#000000") : QColor("#FFFFFF");
+
+    if (auto* logo = findChild<QPushButton*>("logoBtn")) {
+        logo->setIcon(ThemeManager::instance().getIcon("szutility", accent, QString()));
+    }
+    if (m_profileBtn) {
+        m_profileBtn->setIcon(ThemeManager::instance().getIcon(
+            m_currentUser.isEmpty() ? "profileBtnOff" : "profileBtnOn", iconColor));
+    }
+    if (auto* exitBtn = findChild<QToolButton*>("btnExit")) {
+        exitBtn->setIcon(ThemeManager::instance().getIcon("exitBtn", iconColor));
+    }
+    if (auto* discordBtn = findChild<QToolButton*>("btnDiscord")) {
+        discordBtn->setIcon(ThemeManager::instance().getIcon("discordBtn", QColor("#FFFFFF")));
+    }
+}
 
 void MainWindow::showProfileMenu()
 {
@@ -287,10 +297,6 @@ void MainWindow::hideProfileMenu()
     posAnim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-// =========================================================
-// БЛОКИРОВКА / РАЗБЛОКИРОВКА MAINWINDOW
-// =========================================================
-
 void MainWindow::blockMainWindow()
 {
     if (centralWidget()) centralWidget()->setEnabled(false);
@@ -301,15 +307,9 @@ void MainWindow::unblockMainWindow()
     if (centralWidget()) centralWidget()->setEnabled(true);
 }
 
-// =========================================================
-// ЛОГИКА АВТОРИЗАЦИИ
-// =========================================================
-
 void MainWindow::positionDialog(QWidget* dialog)
 {
-    // ПРИНУДИТЕЛЬНО пересчитываем размеры перед позиционированием
     dialog->adjustSize();
-
     int margin = 50;
     int x = this->x() + this->width() - dialog->width() - margin;
     int y = this->y() + (this->height() - dialog->height()) / 2;
@@ -341,6 +341,7 @@ void MainWindow::onProfileButtonClicked()
 void MainWindow::onLoginSuccess(const QString& username)
 {
     m_currentUser = username;
+    m_currentUserInfo = DBManager::instance().getUserInfo(username);
     updateProfileButton();
     m_loginWindow->hide();
     removeBlurEffect();
@@ -371,6 +372,7 @@ void MainWindow::onShowLoginWindow()
 void MainWindow::onLogout()
 {
     m_currentUser.clear();
+    m_currentUserInfo = UserInfo();
     QSettings settings;
     settings.setValue(AuthSettings::kRememberMe, false);
     settings.remove(AuthSettings::kUsername);
@@ -401,10 +403,6 @@ void MainWindow::removeBlurEffect()
     centralWidget()->setGraphicsEffect(nullptr);
     unblockMainWindow();
 }
-
-// =========================================================
-// ПЕРЕКЛЮЧЕНИЕ ОКОН РАЗДЕЛОВ
-// =========================================================
 
 void MainWindow::showSubWindow(QWidget* window)
 {
@@ -441,11 +439,28 @@ void MainWindow::onItemsClicked()
     showSubWindow(m_itemsWindow.get());
 }
 
+void MainWindow::onOpenUserSettings()
+{
+    hideProfileMenu();
+
+    if (!m_settingsWindow) {
+        m_settingsWindow = std::make_unique<SettingsWindow>();
+        connect(m_settingsWindow.get(), &SettingsWindow::backRequested, this, &MainWindow::onBackToMain);
+    }
+
+    m_settingsWindow->setUserInfo(m_currentUserInfo);
+    m_settingsWindow->showFullScreen();
+    m_settingsWindow->raise();
+    m_settingsWindow->activateWindow();
+    hide();
+}
+
 void MainWindow::onBackToMain()
 {
     if (m_auctionWindow) m_auctionWindow->hide();
     if (m_barterWindow)  m_barterWindow->hide();
     if (m_itemsWindow)   m_itemsWindow->hide();
+    if (m_settingsWindow) m_settingsWindow->hide();
 
     showFullScreen();
     raise();

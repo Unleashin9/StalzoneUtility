@@ -2,15 +2,22 @@
 #include <QString>
 #include <QSqlDatabase>
 
+struct UserInfo {
+    int id = 0;
+    QString username;
+    QString createdAt;
+};
+
 class DBManager
 {
 public:
     static DBManager& instance();
 
-    bool init(); // Инициализация БД и создание таблицы
+    bool init();
     bool registerUser(const QString& username, const QString& password);
     bool authenticateUser(const QString& username, const QString& password);
     bool userExists(const QString& username);
+    UserInfo getUserInfo(const QString& username);
 
 private:
     DBManager() = default;

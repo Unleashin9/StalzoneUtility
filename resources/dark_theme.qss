@@ -390,3 +390,11 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 #profileMenuItem:pressed {
     background-color: #181411;
 }
+
+/* ========================================================= */
+/* === 9. SETTINGS WINDOW ===                                */
+/* ========================================================= */
+
+#settingsRoot {
+    background-color: #0a0d12; /* Или твой цвет основного фона */
+}
