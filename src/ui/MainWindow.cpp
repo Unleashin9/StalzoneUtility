@@ -185,7 +185,8 @@ void MainWindow::setupUi()
 
     auto* btnDiscord = new QToolButton(contentWidget);
     btnDiscord->setObjectName("btnDiscord");
-    btnDiscord->setIcon(ThemeManager::instance().getIcon("discordBtn", QColor("#FFFFFF")));
+    // ПУСТАЯ СТРОКА - ищем в корне resources/icons/
+    btnDiscord->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
     btnDiscord->setIconSize(QSize(24, 24));
     btnDiscord->setFixedSize(40, 40);
     btnDiscord->setCursor(Qt::PointingHandCursor);
@@ -215,7 +216,8 @@ void MainWindow::updateIcons()
         exitBtn->setIcon(ThemeManager::instance().getIcon("exitBtn", iconColor));
     }
     if (auto* discordBtn = findChild<QToolButton*>("btnDiscord")) {
-        discordBtn->setIcon(ThemeManager::instance().getIcon("discordBtn", QColor("#FFFFFF")));
+        // ПУСТАЯ СТРОКА
+        discordBtn->setIcon(ThemeManager::instance().getIcon("discord", QColor("#FFFFFF"), ""));
     }
 }
 

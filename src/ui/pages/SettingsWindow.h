@@ -23,5 +23,6 @@ private:
     void setupUi();
 
     QLabel* m_userInfoLabel = nullptr;
+    QLabel* m_usernameLabel = nullptr; // <--- НОВОЕ
     UserInfo m_userInfo;
 };

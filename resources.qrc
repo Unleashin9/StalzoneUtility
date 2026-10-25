@@ -9,13 +9,13 @@
 		<file>resources/fonts/IBMPlexSans-Bold.ttf</file>
 
 		<file>resources/icons/szutility.svg</file>
+		<file>resources/icons/discord.svg</file>
 
         <file>resources/icons/MainWindow/profileBtnOff.svg</file>
         <file>resources/icons/MainWindow/profileBtnOn.svg</file>
         <file>resources/icons/MainWindow/settings.svg</file>
         <file>resources/icons/MainWindow/logout.svg</file>
         <file>resources/icons/MainWindow/exitBtn.svg</file>
-        <file>resources/icons/MainWindow/discordBtn.svg</file>
 
         <file>resources/icons/LoginWindow/profileBtn.svg</file>
         <file>resources/icons/LoginWindow/passwordEditOpen.svg</file>
@@ -27,5 +27,13 @@
         <file>resources/icons/RegisterWindow/passwordEditClose.svg</file>
         <file>resources/icons/RegisterWindow/yes.svg</file>
         <file>resources/icons/RegisterWindow/no.svg</file>
+
+		<file>resources/icons/SettingsWindow/review.svg</file>
+		<file>resources/icons/SettingsWindow/security.svg</file>
+		<file>resources/icons/SettingsWindow/notifications.svg</file>
+		<file>resources/icons/SettingsWindow/partnership.svg</file>
+		<file>resources/icons/SettingsWindow/subscriptions.svg</file>
+		<file>resources/icons/SettingsWindow/balance.svg</file>
+		<file>resources/icons/SettingsWindow/settings.svg</file>
     </qresource>
 </RCC>

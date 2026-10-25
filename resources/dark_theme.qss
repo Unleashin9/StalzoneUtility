@@ -396,5 +396,84 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
 /* ========================================================= */
 
 #settingsRoot {
-    background-color: #0a0d12; /* Или твой цвет основного фона */
+    background-color: #181411; /* Или твой цвет основного фона */
+}
+
+/* ========================================================= */
+/* === 10. SETTINGS WINDOW (BOTTOM BAR) ===                  */
+/* ========================================================= */
+
+#bottomBar {
+    background-color: #1F1A16; /* Тот же цвет, что у topBar */
+    border: none;
+    border-top: 1px solid #3A2F26; /* Полоска сверху */
+    border-radius: 0;
+}
+
+/* Ссылки в нижней панели */
+QPushButton#footerLink {
+    background-color: transparent;
+    color: #F5E6D3; /* Светлый кремовый, чтобы было видно */
+    border: none;
+    font-size: 13px;
+    font-weight: normal;
+    text-align: left;
+    padding: 0px;
+}
+QPushButton#footerLink:hover {
+    color: @accent@; /* Янтарный при наведении */
+    text-decoration: underline;
+}
+QPushButton#footerLink:pressed {
+    color: #D6932F;
+}
+
+/* ========================================================= */
+/* === 12. SETTINGS WINDOW SIDEBAR ===                       */
+/* ========================================================= */
+
+#settingsSidebar {
+    background-color: #141110; /* Чуть темнее контента, чтобы выделить панель */
+    border-right: 1px solid #3A2F26;
+}
+
+#sidebarSectionTitle {
+    color: #A8998A;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 0px 12px;
+    background: transparent;
+}
+
+#sidebarItem {
+    background: transparent;
+    color: #A8998A;
+    border: 1px solid transparent;
+    border-left: 3px solid transparent;
+    border-radius: 4px;
+    text-align: left;
+    padding: 0px 15px;
+    font-weight: normal;
+    font-size: 13px;
+}
+
+#sidebarItem:hover {
+    background: rgba(245, 230, 211, 0.04);
+}
+
+#sidebarItem:checked {
+    color: @accent@;
+    border: 1px solid @accent@;
+    border-left: 3px solid @accent@;
+    background: rgba(240, 169, 59, 0.08);
+    font-weight: bold;
+}
+
+/* Имя пользователя внизу сайдбара */
+#sidebarUsername {
+    color: @accent@;
+    font-size: 14px;
+    font-weight: bold;
+    padding-left: 15px;
 }
