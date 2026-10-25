@@ -18,6 +18,7 @@ public:
     bool authenticateUser(const QString& username, const QString& password);
     bool userExists(const QString& username);
     UserInfo getUserInfo(const QString& username);
+    bool updatePassword(const QString& username, const QString& newPassword);
 
 private:
     DBManager() = default;

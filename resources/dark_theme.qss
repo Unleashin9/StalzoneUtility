@@ -32,13 +32,12 @@ QMainWindow, QDialog {
     background-color: transparent;
 }
 
-/* Принудительная прозрачность для всех кастомных окон (чтобы не было темных углов) */
+/* Принудительная прозрачность для всех кастомных окон */
 QDialog, #loginDialog, #registerDialog, #requirementsPanel {
     background: transparent;
     background-color: transparent;
 }
 
-/* Базовая кнопка (fallback) */
 QPushButton {
     background-color: @accent@;
     color: #181411;
@@ -64,7 +63,6 @@ QPushButton:disabled {
     border-radius: 0px;
 }
 
-/* Верхняя полоса-шапка */
 #topBar {
     background-color: #1F1A16;
     border: none;
@@ -72,7 +70,6 @@ QPushButton:disabled {
     border-radius: 0;
 }
 
-/* Логотип-кнопка (левый верхний угол) — АБСОЛЮТНО СТАТИЧНАЯ */
 #logoBtn {
     background: transparent;
     background-color: transparent;
@@ -97,7 +94,6 @@ QPushButton:disabled {
     outline: none;
 }
 
-/* Кнопка входа/профиля */
 #btnLogin {
     background-color: @accent@;
     color: #181411;
@@ -112,7 +108,6 @@ QPushButton:disabled {
 #btnLogin:hover   { background-color: #F5BD6A; }
 #btnLogin:pressed { background-color: #D6932F; }
 
-/* Кнопки-иконки */
 QToolButton#btnExit, QToolButton#btnDiscord {
     border: none;
     border-radius: 8px;
@@ -189,17 +184,20 @@ QToolButton#btnDiscord:pressed { background-color: #4752C4; }
 #dialogContainer #loginSubmitBtn:hover   { background-color: #F5BD6A; }
 #dialogContainer #loginSubmitBtn:pressed { background-color: #D6932F; }
 
-#dialogContainer #outlineButton {
+#dialogContainer #outlineButton,
+QPushButton#outlineButton {
     background-color: transparent;
     border: 1px solid @accent@;
     color: @accent@;
-    border-radius: 6px;
+    border-radius: 10px;
     padding: 4px 15px;
     font-weight: bold;
     font-size: 12px;
 }
-#dialogContainer #outlineButton:hover   { background-color: rgba(240, 169, 59, 0.1); }
-#dialogContainer #outlineButton:pressed { background-color: rgba(240, 169, 59, 0.2); }
+#dialogContainer #outlineButton:hover,
+QPushButton#outlineButton:hover   { background-color: rgba(240, 169, 59, 0.1); }
+#dialogContainer #outlineButton:pressed,
+QPushButton#outlineButton:pressed { background-color: rgba(240, 169, 59, 0.2); }
 
 #dialogContainer QLineEdit {
     background-color: #221C18;
@@ -474,12 +472,11 @@ QPushButton#footerLink:pressed {
     font-weight: bold;
 }
 
-/* Имя пользователя внизу сайдбара */
 #sidebarUsername {
     color: @accent@;
     font-size: 14px;
     font-weight: bold;
-    padding-left: 15px;
+    background: transparent;
 }
 
 /* ========================================================= */
@@ -508,7 +505,7 @@ QPushButton#footerLink:pressed {
 }
 
 /* ========================================================= */
-/* === 14. SETTINGS WINDOW (ПАНЕЛЬ ПРОФИЛЯ) ===             */
+/* === 13. SETTINGS WINDOW (ПАНЕЛЬ ПРОФИЛЯ) ===             */
 /* ========================================================= */
 
 #profilePanel {
@@ -518,9 +515,8 @@ QPushButton#footerLink:pressed {
 }
 
 #avatarImage {
-    background-color: #141110;
+    background-color: transparent;
     border: none;
-    border-radius: 32px; /* Делает аватар круглым (половина от 64px) */
 }
 
 #accountNameLabel {
@@ -534,4 +530,79 @@ QPushButton#footerLink:pressed {
     color: #A8998A;
     font-size: 13px;
     background: transparent;
+}
+
+/* ========================================================= */
+/* === 14. SETTINGS WINDOW (НОВЫЕ ПАНЕЛИ) ===               */
+/* ========================================================= */
+
+#panelTitle {
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    background: transparent;
+}
+
+#panelSubtitle {
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    background: transparent;
+}
+
+QPushButton#accentButton {
+    background-color: @accent@;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 0px 20px;
+}
+QPushButton#accentButton:hover   { background-color: #F5BD6A; }
+QPushButton#accentButton:pressed { background-color: #D6932F; }
+
+#methodTitle {
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: bold;
+    background: transparent;
+}
+
+#methodSubtitle {
+    color: #A8998A;
+    font-size: 12px;
+    background: transparent;
+}
+
+#badgeActive {
+    background-color: rgba(240, 169, 59, 0.15);
+    color: @accent@;
+    border: 1px solid @accent@;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+#badgeInactive {
+    background-color: transparent;
+    color: #A8998A;
+    border: 1px solid #3A2F26;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+#bindingsLabel {
+    color: #A8998A;
+    font-size: 12px;
+    background: transparent;
+}
+
+/* Прозрачный фон для строк способов входа */
+#methodRow {
+    background: transparent;
+    background-color: transparent;
 }

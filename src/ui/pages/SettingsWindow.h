@@ -6,6 +6,7 @@
 class QLabel;
 class QPushButton;
 class QStackedWidget;
+class QLineEdit;
 
 class SettingsWindow : public QWidget
 {
@@ -23,11 +24,12 @@ protected:
 
 private slots:
     void onChangeAvatarClicked();
+    void onSavePasswordClicked();
 
 private:
     void setupUi();
     void loadAvatar();
-    QPixmap getCircularPixmap(const QPixmap& source, int size); // <--- НОВЫЙ ХЕЛПЕР
+    QPixmap getCircularPixmap(const QPixmap& source, int size);
 
     QLabel* m_userInfoLabel = nullptr;
     QLabel* m_usernameLabel = nullptr;
@@ -35,9 +37,17 @@ private:
     QStackedWidget* m_pages = nullptr;
 
     QLabel* m_avatarLabel = nullptr;
-    QLabel* m_sidebarAvatarLabel = nullptr; // <--- Аватар в сайдбаре
+    QLabel* m_sidebarAvatarLabel = nullptr;
     QLabel* m_accountNameLabel = nullptr;
     QLabel* m_accountDetailsLabel = nullptr;
+
+    QLineEdit* m_loginField = nullptr;
+    QLineEdit* m_emailField = nullptr;
+    QLineEdit* m_currentPassField = nullptr;
+    QLineEdit* m_newPassField = nullptr;
+    QLineEdit* m_confirmPassField = nullptr;
+
+    QPushButton* m_settingsSidebarBtn = nullptr;
 
     UserInfo m_userInfo;
 };

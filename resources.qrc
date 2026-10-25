@@ -10,6 +10,7 @@
 
 		<file>resources/icons/szutility.svg</file>
 		<file>resources/icons/discord.svg</file>
+		<file>resources/icons/telegram.svg</file>
 
         <file>resources/icons/MainWindow/profileBtnOff.svg</file>
         <file>resources/icons/MainWindow/profileBtnOn.svg</file>
@@ -35,5 +36,8 @@
 		<file>resources/icons/SettingsWindow/subscriptions.svg</file>
 		<file>resources/icons/SettingsWindow/balance.svg</file>
 		<file>resources/icons/SettingsWindow/settings.svg</file>
+
+		<file>resources/icons/SettingsWindow/password.svg</file>
+		<file>resources/icons/SettingsWindow/exbo.svg</file>
     </qresource>
 </RCC>

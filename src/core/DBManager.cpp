@@ -23,11 +23,9 @@ bool DBManager::init()
         return false;
     }
 
-    // Проверяем актуальность схемы: должна быть колонка created_at
-    // и id должен быть INTEGER (а не TEXT/UUID из прошлой версии).
+    // Проверяем схему: должна быть колонка created_at и id INTEGER
     QSqlQuery check;
     check.exec("PRAGMA table_info(users)");
-    bool schemaOk = false;
     bool hasCreatedAt = false;
     bool idIsInteger = false;
     while (check.next()) {
@@ -37,13 +35,12 @@ bool DBManager::init()
         if (colName == "id" && colType.contains("INT")) idIsInteger = true;
     }
 
-    // Если таблица пустая (нет колонок) — тоже норм (создадим ниже)
     QSqlQuery countCheck;
     countCheck.exec("SELECT count(*) FROM pragma_table_info('users')");
     int colCount = 0;
     if (countCheck.next()) colCount = countCheck.value(0).toInt();
 
-    schemaOk = (colCount == 0) || (hasCreatedAt && idIsInteger);
+    bool schemaOk = (colCount == 0) || (hasCreatedAt && idIsInteger);
 
     if (!schemaOk) {
         QSqlQuery drop;
@@ -144,4 +141,31 @@ UserInfo DBManager::getUserInfo(const QString& username)
         info.createdAt = query.value(2).toString();
     }
     return info;
+}
+
+bool DBManager::updatePassword(const QString& username, const QString& newPassword)
+{
+    QByteArray salt(16, 0);
+    for (int i = 0; i < salt.size(); ++i) {
+        salt[i] = static_cast<char>(QRandomGenerator::global()->generate() % 256);
+    }
+
+    QByteArray hash = QPasswordDigestor::deriveKeyPbkdf2(
+        QCryptographicHash::Sha256,
+        newPassword.toUtf8(),
+        salt,
+        10000,
+        32);
+
+    QSqlQuery query;
+    query.prepare("UPDATE users SET salt = :salt, password_hash = :hash WHERE username = :username");
+    query.bindValue(":salt", salt);
+    query.bindValue(":hash", hash);
+    query.bindValue(":username", username);
+
+    if (!query.exec()) {
+        qDebug() << "Update password error:" << query.lastError().text();
+        return false;
+    }
+    return true;
 }
