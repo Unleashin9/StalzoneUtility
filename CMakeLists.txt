@@ -35,14 +35,16 @@ add_executable(StalzoneUtility
     src/ui/auth/LoginWindow.h
     src/ui/auth/RegisterWindow.cpp
     src/ui/auth/RegisterWindow.h
+    src/ui/widgets/SidebarButton.cpp
+    src/ui/widgets/SidebarButton.h
+    src/ui/widgets/ItemCard.cpp
+    src/ui/widgets/ItemCard.h
     src/ui/widgets/Toast.cpp
     src/ui/widgets/Toast.h
     src/ui/widgets/ProfileMenu.cpp
     src/ui/widgets/ProfileMenu.h
     src/ui/widgets/RequirementsPanel.cpp
     src/ui/widgets/RequirementsPanel.h
-    src/ui/widgets/ItemCard.cpp
-    src/ui/widgets/ItemCard.h
     resources.qrc
 )
 

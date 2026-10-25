@@ -225,6 +225,7 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     border-radius: 6px;
     text-align: left;
     padding-left: 7px;
+    padding-right: 48px;
     font-size: 14px;
     font-weight: 600;
 }
@@ -249,6 +250,7 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     border-radius: 6px;
     text-align: left;
     padding-left: 7px;
+    padding-right: 48px;
     font-size: 14px;
     font-weight: 600;
 }
@@ -773,4 +775,14 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
 }
 #cardFavoriteBtn:pressed {
     background: rgba(240, 169, 59, 0.25);
+}
+
+#auctionRoot #sidebarCounter {
+    background-color: #14100D;
+    color: #A8998A;
+    border: 1px solid #3A2F26;
+    border-radius: 4px;
+    padding: 0px 6px;
+    font-size: 11px;
+    font-weight: 600;
 }

@@ -1,6 +1,7 @@
 ﻿#include "AuctionWindow.h"
 #include "core/ThemeManager.h"
 #include "ui/widgets/ItemCard.h"
+#include "ui/widgets/SidebarButton.h"  // <--- ВОТ ЭТОЙ СТРОКИ НЕ ХВАТАЛО
 #include "ui/widgets/Toast.h"
 
 #include <QVBoxLayout>
@@ -30,7 +31,7 @@ AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent
     m_netManager = new QNetworkAccessManager(this);
     m_allowedItemIds = { "wj6l2", "qj1lk", "g35n", "wg53" };
 
-    loadFavorites(); // <--- ЗАГРУЖАЕМ ИЗБРАННОЕ ДО СОЗДАНИЯ UI
+    loadFavorites();
 
     setupUi();
 
@@ -59,18 +60,14 @@ void AuctionWindow::saveFavorites()
 void AuctionWindow::updateFavoritesCounter()
 {
     if (m_favouritesBtn) {
-        m_favouritesBtn->setText(QString(" Избранное  %1").arg(m_favoriteIds.size()));
+        m_favouritesBtn->setCounter(m_favoriteIds.size());
     }
 }
 
 void AuctionWindow::onFavoriteToggled(const QString& itemId, bool isFavorite)
 {
-    if (isFavorite) {
-        m_favoriteIds.insert(itemId);
-    }
-    else {
-        m_favoriteIds.remove(itemId);
-    }
+    if (isFavorite) m_favoriteIds.insert(itemId);
+    else m_favoriteIds.remove(itemId);
     saveFavorites();
     updateFavoritesCounter();
 }
@@ -212,13 +209,14 @@ QWidget* AuctionWindow::createQuickAccessSidebar()
     m_recentBtn->setIcon(ThemeManager::instance().getIcon("recently", QColor("#A8998A"), "AuctionWindow"));
     m_quickAccessGroup->addButton(m_recentBtn, 0);
 
-    m_favouritesBtn = new QPushButton(QString(" Избранное  %1").arg(m_favoriteIds.size()), sidebar);
+    m_favouritesBtn = new SidebarButton(" Избранное", sidebar);
     m_favouritesBtn->setObjectName("quickAccessBtn");
     m_favouritesBtn->setCheckable(true);
     m_favouritesBtn->setIconSize(QSize(18, 18));
     m_favouritesBtn->setCursor(Qt::PointingHandCursor);
     m_favouritesBtn->setMinimumHeight(38);
     m_favouritesBtn->setIcon(ThemeManager::instance().getIcon("favourite", QColor("#A8998A"), "AuctionWindow"));
+    m_favouritesBtn->setCounter(m_favoriteIds.size());
     m_quickAccessGroup->addButton(m_favouritesBtn, 1);
 
     connect(m_quickAccessGroup, QOverload<int>::of(&QButtonGroup::idClicked), this, &AuctionWindow::onQuickAccessClicked);
@@ -247,13 +245,12 @@ QWidget* AuctionWindow::createQuickAccessSidebar()
 
     for (int i = 0; i < categories.size(); ++i) {
         auto& cat = categories[i];
-        auto* btn = new QPushButton(sidebar);
+        auto* btn = new SidebarButton(" " + cat.second, sidebar);
         btn->setObjectName("categoryBtn");
         btn->setCheckable(true);
         btn->setCursor(Qt::PointingHandCursor);
         btn->setMinimumHeight(38);
         btn->setProperty("groupName", cat.first);
-        btn->setText(cat.second);
         m_categoryGroup->addButton(btn, i);
         connect(btn, &QPushButton::clicked, this, [this, btn]() {
             onCategoryClicked(btn->property("groupName").toString(), btn->text());
@@ -329,53 +326,34 @@ void AuctionWindow::populateItems(const QString& groupName)
         }
     }
 
-    // Хелпер: относится ли предмет к "Обычному" качеству
-    // (RANK_ROOKIE + артефакты с неизвестной/пустой редкостью)
     auto isCommonItem = [](const ItemData& item) -> bool {
         if (item.color == "RANK_ROOKIE") return true;
         if (item.color == "DEFAULT" || item.color == "COMMON" || item.color == "RANK_DEFAULT") return true;
-
-        // Артефакты обычного качества: цвет не относится к одной из 5 высших редкостей
         if (item.category == "artefact") {
             static const QStringList highRanks = {
-                "RANK_LEGEND", "RANK_MASTER", "RANK_VETERAN",
-                "RANK_STALKER", "RANK_NEWBIE"
+                "RANK_LEGEND", "RANK_MASTER", "RANK_VETERAN", "RANK_STALKER", "RANK_NEWBIE"
             };
-            if (item.color.isEmpty() || !highRanks.contains(item.color)) {
-                return true;
-            }
+            if (item.color.isEmpty() || !highRanks.contains(item.color)) return true;
         }
         return false;
         };
 
-    // Хелпер для сортировки: индекс редкости (неизвестные = Обычный)
     auto rankIndexOf = [&rankColors, &isCommonItem](const ItemData& item) -> int {
         int idx = rankColors.indexOf(item.color);
-        if (idx < 0 && isCommonItem(item)) {
-            return rankColors.size() - 1; // позиция RANK_ROOKIE
-        }
+        if (idx < 0 && isCommonItem(item)) return rankColors.size() - 1;
         return idx;
         };
 
-    // 1. Фильтрация
     for (const auto& item : items) {
         if (!m_allowedItemIds.contains(item.id)) continue;
-
         if (!selectedColors.isEmpty()) {
             bool matches = selectedColors.contains(item.color);
-
-            // Если выбран «Обычный» — также пропускаем артефакты обычного качества
-            if (!matches && selectedColors.contains("RANK_ROOKIE") && isCommonItem(item)) {
-                matches = true;
-            }
-
+            if (!matches && selectedColors.contains("RANK_ROOKIE") && isCommonItem(item)) matches = true;
             if (!matches) continue;
         }
-
         filteredItems.append(item);
     }
 
-    // 2. Сортировка
     if (m_currentSort == 0) {
         std::sort(filteredItems.begin(), filteredItems.end(),
             [&rankIndexOf](const ItemData& a, const ItemData& b) {
@@ -398,7 +376,6 @@ void AuctionWindow::populateItems(const QString& groupName)
         return;
     }
 
-    // 3. Отрисовка
     for (const auto& item : filteredItems) {
         auto* listItem = new QListWidgetItem(m_itemsList);
         listItem->setText(item.name);
@@ -424,18 +401,7 @@ void AuctionWindow::onDatabaseLoaded()
     for (auto* btn : m_categoryButtons) {
         QString group = btn->property("groupName").toString();
         int count = m_db->itemsByGroup(group).size();
-        QString displayName;
-        if (group == "all") displayName = "Все предметы";
-        else if (group == "weapon") displayName = "Оружие";
-        else if (group == "armor") displayName = "Костюмы";
-        else if (group == "containers") displayName = "Рюкзаки и контейнеры";
-        else if (group == "artefact") displayName = "Артефакты";
-        else if (group == "attachment") displayName = "Обвесы и модули";
-        else if (group == "bullet") displayName = "Патроны и гранаты";
-        else if (group == "medicine") displayName = "Медикаменты и еда";
-        else if (group == "misc") displayName = "Разное";
-        else if (group == "other") displayName = "Прочее";
-        btn->setText(QString("%1 (%2)").arg(displayName).arg(count));
+        btn->setCounter(count);
     }
 
     for (auto* btn : m_categoryButtons) {
@@ -602,7 +568,6 @@ QWidget* AuctionWindow::createSortPopup()
 void AuctionWindow::updateRankItemStyle(int index)
 {
     if (index < 0 || index >= m_rankItems.size()) return;
-    // НОВЫЕ ЦВЕТА:
     const QStringList rankColors = { "#ffdd66", "#ff5767", "#d968c4", "#8d8dff", "#7def7d", "#eeeeee" };
     QString color = rankColors[index];
     bool active = m_selectedRanks.contains(index);
