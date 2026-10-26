@@ -39,7 +39,10 @@ void StalzoneAPI::fetchAuctionLots(const QString& region, const QString& itemId)
 
 void StalzoneAPI::fetchAllAuctionLots(const QString& region, const QString& itemId)
 {
+    qDebug() << "[API] fetchAllAuctionLots called for" << itemId;
+
     if (m_accessToken.isEmpty()) {
+        qDebug() << "[API] Token is empty!";
         emit errorOccurred("Token is empty. Check token.txt");
         return;
     }
@@ -70,8 +73,8 @@ void StalzoneAPI::requestNextPage(const QString& url)
     m_currentReply = reply;
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        // Если этот ответ больше не актуален (был отменен или заменен) — игнорируем
         if (reply != m_currentReply) {
+            qDebug() << "[API] Reply is stale, ignoring";
             reply->deleteLater();
             return;
         }
@@ -88,11 +91,16 @@ void StalzoneAPI::requestNextPage(const QString& url)
                 lots = doc.object().value("lots").toArray();
             }
 
-            m_accumulatedLots.append(lots);
+            for (const QJsonValue& v : lots) {
+                m_accumulatedLots.append(v);
+            }
             int received = lots.size();
+            qDebug() << "[API] Page received:" << received << "lots. Total:" << m_accumulatedLots.size();
+
             m_currentOffset += received;
 
             if (received < m_pageLimit || m_accumulatedLots.size() >= m_maxTotalLots) {
+                qDebug() << "[API] Emitting allLotsReceived with" << m_accumulatedLots.size() << "lots";
                 emit allLotsReceived(m_accumulatedLots);
                 reply->deleteLater();
                 m_currentReply = nullptr;
@@ -106,6 +114,7 @@ void StalzoneAPI::requestNextPage(const QString& url)
             }
         }
         else {
+            qDebug() << "[API] Error:" << reply->errorString();
             int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
             emit errorOccurred(QString("API Error (HTTP %1): %2").arg(statusCode).arg(reply->errorString()));
             reply->deleteLater();

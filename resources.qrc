@@ -39,7 +39,6 @@
 		<file>resources/icons/SettingsWindow/settings.svg</file>
 		<file>resources/icons/SettingsWindow/passwordEditOpen.svg</file>
 		<file>resources/icons/SettingsWindow/passwordEditClose.svg</file>
-
 		<file>resources/icons/SettingsWindow/password.svg</file>
 		<file>resources/icons/SettingsWindow/exbo.svg</file>
 
@@ -51,5 +50,6 @@
 		<file>resources/icons/AuctionWindow/filterremove.svg</file>
 		<file>resources/icons/AuctionWindow/recently.svg</file>
 		<file>resources/icons/AuctionWindow/favourite.svg</file>
+		<file>resources/icons/AuctionWindow/bestprice.svg</file>
     </qresource>
 </RCC>

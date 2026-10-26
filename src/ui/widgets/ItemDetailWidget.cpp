@@ -3,6 +3,7 @@
 #include "ui/widgets/FiltersBar.h"
 
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -22,10 +23,10 @@ void ItemDetailWidget::setupUi()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // Контейнер для панели фильтров с отступами 10px со всех сторон
+    // === КОНТЕЙНЕР: ФИЛЬТРЫ ===
     auto* filtersContainer = new QWidget(this);
     auto* filtersContainerLayout = new QVBoxLayout(filtersContainer);
-    filtersContainerLayout->setContentsMargins(10, 10, 10, 10);
+    filtersContainerLayout->setContentsMargins(10, 10, 10, 0);
     filtersContainerLayout->setSpacing(0);
 
     m_filtersBar = new FiltersBar(filtersContainer);
@@ -35,7 +36,50 @@ void ItemDetailWidget::setupUi()
 
     mainLayout->addWidget(filtersContainer);
 
-    // Центральный блок: иконка + название
+    // === КОНТЕЙНЕР: ЛУЧШАЯ ЦЕНА ===
+    auto* bestPriceContainer = new QWidget(this);
+    auto* bestPriceContainerLayout = new QVBoxLayout(bestPriceContainer);
+    bestPriceContainerLayout->setContentsMargins(10, 10, 10, 0);
+    bestPriceContainerLayout->setSpacing(0);
+
+    auto* bestPricePanel = new QWidget(bestPriceContainer);
+    bestPricePanel->setObjectName("bestPricePanel");
+    bestPricePanel->setAttribute(Qt::WA_StyledBackground, true);
+
+    auto* panelLayout = new QHBoxLayout(bestPricePanel);
+    panelLayout->setContentsMargins(15, 10, 15, 10);
+    panelLayout->setSpacing(12);
+
+    // Иконка
+    m_bestPriceIcon = new QLabel(bestPricePanel);
+    m_bestPriceIcon->setFixedSize(28, 28);
+    m_bestPriceIcon->setStyleSheet("background: transparent;");
+    QIcon bestIcon = ThemeManager::instance().getIcon(
+        "bestprice", ThemeManager::instance().accentColor(), "AuctionWindow");
+    if (!bestIcon.isNull()) {
+        m_bestPriceIcon->setPixmap(bestIcon.pixmap(28, 28));
+    }
+    panelLayout->addWidget(m_bestPriceIcon, 0, Qt::AlignVCenter);
+
+    // Текст: заголовок + значение
+    auto* textLayout = new QVBoxLayout();
+    textLayout->setSpacing(2);
+
+    m_bestPriceTitle = new QLabel("Лучшая цена", bestPricePanel);
+    m_bestPriceTitle->setObjectName("bestPriceTitle");
+    textLayout->addWidget(m_bestPriceTitle);
+
+    m_bestPriceValue = new QLabel("—", bestPricePanel);
+    m_bestPriceValue->setObjectName("bestPriceValue");
+    textLayout->addWidget(m_bestPriceValue);
+
+    panelLayout->addLayout(textLayout);
+    panelLayout->addStretch();
+
+    bestPriceContainerLayout->addWidget(bestPricePanel);
+    mainLayout->addWidget(bestPriceContainer);
+
+    // === ЦЕНТРАЛЬНЫЙ БЛОК: ИКОНКА + НАЗВАНИЕ ===
     auto* contentWidget = new QWidget(this);
     auto* contentLayout = new QVBoxLayout(contentWidget);
     contentLayout->setContentsMargins(30, 20, 30, 20);
@@ -81,6 +125,26 @@ void ItemDetailWidget::setItem(const ItemData& item)
             netManager->deleteLater();
             });
     }
+}
+
+void ItemDetailWidget::setBestPrice(int pricePerItem)
+{
+    if (!m_bestPriceValue) return;
+    if (pricePerItem <= 0) {
+        m_bestPriceValue->setText("—");
+        return;
+    }
+    m_bestPriceValue->setText(QString::number(pricePerItem) + " ₽");
+}
+
+void ItemDetailWidget::setBestPriceLoading()
+{
+    if (m_bestPriceValue) m_bestPriceValue->setText("...");
+}
+
+void ItemDetailWidget::setBestPriceEmpty()
+{
+    if (m_bestPriceValue) m_bestPriceValue->setText("—");
 }
 
 QColor ItemDetailWidget::colorForRank(const QString& colorName) const

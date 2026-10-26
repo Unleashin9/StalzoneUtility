@@ -454,6 +454,8 @@ void AuctionWindow::populateItems(const QString& groupName)
 
 void AuctionWindow::onCardClicked(const ItemData& item)
 {
+    qDebug() << "[onCardClicked] Item:" << item.id << item.name;
+
     m_sidebarItemInfo->setItem(item);
     m_itemDetailWidget->setItem(item);
 
@@ -466,11 +468,16 @@ void AuctionWindow::onCardClicked(const ItemData& item)
         m_auctionStats->reset();
         m_auctionStats->setLoading();
     }
+    // НОВОЕ: сброс панели лучшей цены
+    m_itemDetailWidget->setBestPriceLoading();
+
     m_api->fetchAllAuctionLots("ru", item.id);
 }
 
 void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
 {
+    qDebug() << "[onDetailLotsReceived] Received" << lots.size() << "lots";
+
     if (!m_auctionStats) return;
 
     if (!lots.isEmpty()) {
@@ -508,12 +515,15 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
     }
 
     m_auctionStats->setStats(count, sumPerItem / validLots, minPrice, maxPrice);
+
+    m_itemDetailWidget->setBestPrice(qRound(minPrice));
 }
 
 void AuctionWindow::onDetailApiError(const QString& error)
 {
     Q_UNUSED(error);
     if (m_auctionStats) m_auctionStats->reset();
+    m_itemDetailWidget->setBestPriceEmpty();
 }
 
 void AuctionWindow::onRaritiesChanged(const QSet<int>& selectedRarities)
