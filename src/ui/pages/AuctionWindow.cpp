@@ -1,10 +1,12 @@
 ﻿#include "AuctionWindow.h"
+#include "api/StalzoneAPI.h"
 #include "core/ThemeManager.h"
 #include "ui/widgets/ItemCard.h"
-#include "ui/widgets/SidebarButton.h"  // <--- ВОТ ЭТОЙ СТРОКИ НЕ ХВАТАЛО
-#include "ui/widgets/Toast.h"
-#include "ui/widgets/ItemDetailWidget.h"
+#include "ui/widgets/SidebarButton.h"
 #include "ui/widgets/SidebarItemInfo.h"
+#include "ui/widgets/SidebarAuctionStats.h"
+#include "ui/widgets/ItemDetailWidget.h"
+#include "ui/widgets/Toast.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -22,6 +24,7 @@
 #include <QSettings>
 #include <QDebug>
 #include <algorithm>
+#include <limits>
 
 AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent)
     : QWidget(parent), m_api(api), m_db(db)
@@ -43,6 +46,9 @@ AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent
     else {
         connect(m_db, &GameDatabase::loaded, this, &AuctionWindow::onDatabaseLoaded);
     }
+
+    connect(m_api, &StalzoneAPI::allLotsReceived, this, &AuctionWindow::onDetailLotsReceived);
+    connect(m_api, &StalzoneAPI::errorOccurred, this, &AuctionWindow::onDetailApiError);
 }
 
 void AuctionWindow::loadFavorites()
@@ -72,14 +78,6 @@ void AuctionWindow::onFavoriteToggled(const QString& itemId, bool isFavorite)
     else m_favoriteIds.remove(itemId);
     saveFavorites();
     updateFavoritesCounter();
-}
-
-void AuctionWindow::onCardClicked(const ItemData& item)
-{
-    m_sidebarItemInfo->setItem(item);
-    m_itemDetailWidget->setItem(item);
-    m_sidebarStack->setCurrentIndex(1);
-    m_rightStack->setCurrentIndex(1);
 }
 
 void AuctionWindow::setupUi()
@@ -155,29 +153,28 @@ void AuctionWindow::setupUi()
     catalogLayout->setContentsMargins(0, 0, 0, 0);
     catalogLayout->setSpacing(0);
 
-    // Левый сайдбар — стек (обычный / пустой)
-    m_sidebarStack = new QStackedWidget(catalogPage);
-    m_sidebarStack->addWidget(createQuickAccessSidebar()); // страница 0
-    m_emptySidebar = createEmptySidebar();
-    m_sidebarStack->addWidget(m_emptySidebar);             // страница 1
-    catalogLayout->addWidget(m_sidebarStack);
+    // Обычный сайдбар
+    m_normalSidebar = createQuickAccessSidebar();
+    catalogLayout->addWidget(m_normalSidebar);
 
-    // Правая часть — стек (каталог / детали)
+    // Пустой сайдбар (скрыт)
+    m_emptySidebar = createEmptySidebar();
+    m_emptySidebar->hide();
+    catalogLayout->addWidget(m_emptySidebar);
+
+    // Правая часть — стек
     m_rightStack = new QStackedWidget(catalogPage);
-    m_rightStack->addWidget(createRightArea());             // страница 0 - каталог
+    m_rightStack->addWidget(createRightArea());
 
     m_itemDetailWidget = new ItemDetailWidget(catalogPage);
-    connect(m_itemDetailWidget, &ItemDetailWidget::backRequested, this, [this]() {
-        // Возврат к каталогу: показываем обычный сайдбар и сетку
-        m_sidebarStack->setCurrentIndex(0);
-        m_rightStack->setCurrentIndex(0);
-        });
-    m_rightStack->addWidget(m_itemDetailWidget);            // страница 1 - детали
+    connect(m_itemDetailWidget, &ItemDetailWidget::raritiesChanged, this, &AuctionWindow::onRaritiesChanged);
+    connect(m_itemDetailWidget, &ItemDetailWidget::enchantChanged, this, &AuctionWindow::onEnchantChanged);
+    m_rightStack->addWidget(m_itemDetailWidget);
 
     catalogLayout->addWidget(m_rightStack, 1);
     contentStack->addWidget(catalogPage);
 
-    // Страницы Мониторинг / Перепродажа (пока заглушки)
+    // Страницы Мониторинг / Перепродажа
     auto* monitoringPage = new QWidget(contentStack);
     auto* monLayout = new QVBoxLayout(monitoringPage);
     monLayout->addWidget(new QLabel("Мониторинг в разработке...", monitoringPage), 0, Qt::AlignCenter);
@@ -192,13 +189,18 @@ void AuctionWindow::setupUi()
 
     connect(m_catalogNavBtn, &QPushButton::clicked, this, [contentStack, this]() {
         contentStack->setCurrentIndex(0);
-        // Возврат в каталог на всякий случай
-        m_sidebarStack->setCurrentIndex(0);
+        m_normalSidebar->show();
+        m_emptySidebar->hide();
         m_rightStack->setCurrentIndex(0);
         });
-    connect(m_monitoringNavBtn, &QPushButton::clicked, this, [contentStack]() { contentStack->setCurrentIndex(1); });
-    connect(m_resaleNavBtn, &QPushButton::clicked, this, [contentStack]() { contentStack->setCurrentIndex(2); });
+    connect(m_monitoringNavBtn, &QPushButton::clicked, this, [contentStack]() {
+        contentStack->setCurrentIndex(1);
+        });
+    connect(m_resaleNavBtn, &QPushButton::clicked, this, [contentStack]() {
+        contentStack->setCurrentIndex(2);
+        });
 
+    // === НИЖНЯЯ ПАНЕЛЬ ===
     auto* bottomBar = new QWidget(this);
     bottomBar->setObjectName("bottomBar");
     bottomBar->setFixedHeight(60);
@@ -250,7 +252,8 @@ QWidget* AuctionWindow::createQuickAccessSidebar()
     m_favouritesBtn->setCounter(m_favoriteIds.size());
     m_quickAccessGroup->addButton(m_favouritesBtn, 1);
 
-    connect(m_quickAccessGroup, QOverload<int>::of(&QButtonGroup::idClicked), this, &AuctionWindow::onQuickAccessClicked);
+    connect(m_quickAccessGroup, QOverload<int>::of(&QButtonGroup::idClicked),
+        this, &AuctionWindow::onQuickAccessClicked);
 
     layout->addWidget(m_recentBtn);
     layout->addWidget(m_favouritesBtn);
@@ -305,11 +308,14 @@ QWidget* AuctionWindow::createEmptySidebar()
 
     auto* layout = new QVBoxLayout(sidebar);
     layout->setContentsMargins(0, 20, 0, 0);
-    layout->setSpacing(0);
+    layout->setSpacing(10);
     layout->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
 
     m_sidebarItemInfo = new SidebarItemInfo(sidebar);
     layout->addWidget(m_sidebarItemInfo, 0, Qt::AlignHCenter);
+
+    m_auctionStats = new SidebarAuctionStats(sidebar);
+    layout->addWidget(m_auctionStats, 0, Qt::AlignHCenter);
 
     layout->addStretch();
     return sidebar;
@@ -446,6 +452,83 @@ void AuctionWindow::populateItems(const QString& groupName)
     }
 }
 
+void AuctionWindow::onCardClicked(const ItemData& item)
+{
+    m_sidebarItemInfo->setItem(item);
+    m_itemDetailWidget->setItem(item);
+
+    m_normalSidebar->hide();
+    m_emptySidebar->show();
+    m_rightStack->setCurrentIndex(1);
+
+    m_currentDetailItemId = item.id;
+    if (m_auctionStats) {
+        m_auctionStats->reset();
+        m_auctionStats->setLoading();
+    }
+    m_api->fetchAllAuctionLots("ru", item.id);
+}
+
+void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
+{
+    if (!m_auctionStats) return;
+
+    if (!lots.isEmpty()) {
+        QString responseItemId = lots.first().toObject()["itemId"].toString();
+        if (responseItemId != m_currentDetailItemId) return;
+    }
+
+    if (lots.isEmpty()) {
+        m_auctionStats->setStats(0, 0, 0, 0);
+        return;
+    }
+
+    int count = lots.size();
+    double sumPerItem = 0;
+    double minPrice = std::numeric_limits<double>::max();
+    double maxPrice = 0;
+    int validLots = 0;
+
+    for (const QJsonValue& v : lots) {
+        QJsonObject lot = v.toObject();
+        int amount = lot["amount"].toInt();
+        int buyoutPrice = lot["buyoutPrice"].toInt();
+        if (amount <= 0) continue;
+
+        double pricePerItem = static_cast<double>(buyoutPrice) / amount;
+        sumPerItem += pricePerItem;
+        if (pricePerItem < minPrice) minPrice = pricePerItem;
+        if (pricePerItem > maxPrice) maxPrice = pricePerItem;
+        validLots++;
+    }
+
+    if (validLots == 0) {
+        m_auctionStats->setStats(0, 0, 0, 0);
+        return;
+    }
+
+    m_auctionStats->setStats(count, sumPerItem / validLots, minPrice, maxPrice);
+}
+
+void AuctionWindow::onDetailApiError(const QString& error)
+{
+    Q_UNUSED(error);
+    if (m_auctionStats) m_auctionStats->reset();
+}
+
+void AuctionWindow::onRaritiesChanged(const QSet<int>& selectedRarities)
+{
+    m_selectedRarities = selectedRarities;
+    // TODO: подключить фильтр по quality, когда получим qlt из API
+}
+
+void AuctionWindow::onEnchantChanged(int minValue, int maxValue)
+{
+    m_enchantMin = minValue;
+    m_enchantMax = maxValue;
+    // TODO: подключить фильтр по заточке
+}
+
 void AuctionWindow::onDatabaseLoaded()
 {
     for (auto* btn : m_categoryButtons) {
@@ -495,7 +578,6 @@ QWidget* AuctionWindow::createRightArea()
     m_itemsList->setFocusPolicy(Qt::NoFocus);
 
     rightLayout->addWidget(m_itemsList, 1);
-
     return rightArea;
 }
 
@@ -726,7 +808,9 @@ void AuctionWindow::updateRankButtonText()
         const QStringList ranks = { "Легенда", "Мастер", "Ветеран", "Сталкер", "Новичок", "Обычный" };
         m_rankFilterBtn->setText(" Ранг: " + ranks[idx]);
     }
-    else m_rankFilterBtn->setText(QString(" Ранг: %1").arg(m_selectedRanks.size()));
+    else {
+        m_rankFilterBtn->setText(QString(" Ранг: %1").arg(m_selectedRanks.size()));
+    }
 }
 
 void AuctionWindow::updateSortButtonText()

@@ -1,9 +1,10 @@
 ﻿#pragma once
 #include <QWidget>
+#include <QSet>
 #include "core/GameDatabase.h"
 
 class QLabel;
-class QPushButton;
+class FiltersBar;
 
 class ItemDetailWidget : public QWidget
 {
@@ -13,7 +14,8 @@ public:
     void setItem(const ItemData& item);
 
 signals:
-    void backRequested();
+    void raritiesChanged(const QSet<int>& rarities);
+    void enchantChanged(int minValue, int maxValue);
 
 private:
     void setupUi();
@@ -21,5 +23,5 @@ private:
 
     QLabel* m_iconLabel = nullptr;
     QLabel* m_nameLabel = nullptr;
-    QPushButton* m_backBtn = nullptr;
+    FiltersBar* m_filtersBar = nullptr;
 };

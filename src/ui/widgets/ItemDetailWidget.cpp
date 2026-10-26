@@ -1,10 +1,9 @@
 ﻿#include "ItemDetailWidget.h"
 #include "core/ThemeManager.h"
+#include "ui/widgets/FiltersBar.h"
 
 #include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QLabel>
-#include <QPushButton>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -20,35 +19,44 @@ ItemDetailWidget::ItemDetailWidget(QWidget* parent) : QWidget(parent)
 void ItemDetailWidget::setupUi()
 {
     auto* mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(30, 30, 30, 30);
-    mainLayout->setSpacing(20);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
 
-    m_backBtn = new QPushButton("← Назад", this);
-    m_backBtn->setObjectName("btnBack");
-    m_backBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_backBtn, &QPushButton::clicked, this, &ItemDetailWidget::backRequested);
-    mainLayout->addWidget(m_backBtn, 0, Qt::AlignLeft);
+    // Контейнер для панели фильтров с отступами 10px со всех сторон
+    auto* filtersContainer = new QWidget(this);
+    auto* filtersContainerLayout = new QVBoxLayout(filtersContainer);
+    filtersContainerLayout->setContentsMargins(10, 10, 10, 10);
+    filtersContainerLayout->setSpacing(0);
 
-    mainLayout->addStretch();
+    m_filtersBar = new FiltersBar(filtersContainer);
+    connect(m_filtersBar, &FiltersBar::raritiesChanged, this, &ItemDetailWidget::raritiesChanged);
+    connect(m_filtersBar, &FiltersBar::enchantChanged, this, &ItemDetailWidget::enchantChanged);
+    filtersContainerLayout->addWidget(m_filtersBar);
 
-    auto* centerLayout = new QVBoxLayout();
-    centerLayout->setSpacing(20);
-    centerLayout->setAlignment(Qt::AlignCenter);
+    mainLayout->addWidget(filtersContainer);
 
-    m_iconLabel = new QLabel(this);
+    // Центральный блок: иконка + название
+    auto* contentWidget = new QWidget(this);
+    auto* contentLayout = new QVBoxLayout(contentWidget);
+    contentLayout->setContentsMargins(30, 20, 30, 20);
+    contentLayout->setSpacing(20);
+    contentLayout->setAlignment(Qt::AlignCenter);
+
+    m_iconLabel = new QLabel(contentWidget);
     m_iconLabel->setFixedSize(200, 200);
     m_iconLabel->setAlignment(Qt::AlignCenter);
     m_iconLabel->setStyleSheet("background-color: #1F1A16; border-radius: 12px; border: 1px solid #3A2F26;");
-    centerLayout->addWidget(m_iconLabel, 0, Qt::AlignCenter);
+    contentLayout->addStretch();
+    contentLayout->addWidget(m_iconLabel, 0, Qt::AlignCenter);
 
-    m_nameLabel = new QLabel(this);
+    m_nameLabel = new QLabel(contentWidget);
     m_nameLabel->setObjectName("itemDetailName");
     m_nameLabel->setAlignment(Qt::AlignCenter);
     m_nameLabel->setWordWrap(true);
-    centerLayout->addWidget(m_nameLabel, 0, Qt::AlignCenter);
+    contentLayout->addWidget(m_nameLabel, 0, Qt::AlignCenter);
+    contentLayout->addStretch();
 
-    mainLayout->addLayout(centerLayout);
-    mainLayout->addStretch();
+    mainLayout->addWidget(contentWidget, 1);
 }
 
 void ItemDetailWidget::setItem(const ItemData& item)

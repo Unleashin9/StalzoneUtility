@@ -74,11 +74,10 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     border: none;
     outline: none;
     border-radius: 0;
-    font-size: 40px;
+    font-size: 32px;
     font-weight: 700;
     text-align: left;
     padding: 0px 10px;
-    min-height: 60px;
 }
 #mainContainer #logoBtn:hover,
 #mainContainer #logoBtn:pressed,
@@ -176,11 +175,11 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     color: #F5E6D3;
     border: none;
     outline: none;
-    font-size: 40px;
+    font-size: 32px;        /* было 40px */
     font-weight: 700;
     text-align: left;
-    padding: 0px 10px;
-    min-height: 60px;
+    padding: 0px 15px;
+    /* min-height: 60px; — убрано */
 }
 #auctionRoot #logoBtn:hover {
     background: transparent;
@@ -399,6 +398,53 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     background: transparent;
 }
 
+/* Карточка статистики аукциона */
+#auctionRoot #sidebarAuctionStats {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 12px;
+}
+
+#auctionRoot #statTitle {
+    color: #A8998A;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: transparent;
+}
+
+#auctionRoot #statValue {
+    color: #F5E6D3;
+    font-size: 14px;
+    font-weight: 700;
+    background: transparent;
+}
+
+#auctionRoot #statDivider {
+    background-color: #3A2F26;
+    border: none;
+    max-height: 1px;
+}
+
+#auctionRoot #enchantEdit {
+    background-color: #221C18;
+    color: #F5E6D3;
+    border: 1px solid #3A2F26;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 12px;
+}
+#auctionRoot #enchantEdit:focus {
+    border: 1px solid @accent@;
+}
+
+/* Горизонтальная панель фильтров */
+#auctionRoot #filtersBar {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 10px;
+}
+
 /* ========================================================= */
 /* === 4. SETTINGS WINDOW ===                                */
 /* ========================================================= */
@@ -417,11 +463,10 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     color: #F5E6D3;
     border: none;
     outline: none;
-    font-size: 40px;
+    font-size: 32px;
     font-weight: 700;
     text-align: left;
     padding: 0px 10px;
-    min-height: 60px;
 }
 #settingsRoot #logoBtn:hover {
     background: transparent;

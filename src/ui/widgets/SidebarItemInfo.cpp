@@ -23,7 +23,6 @@ void SidebarItemInfo::setupUi()
     layout->setSpacing(6);
     layout->setAlignment(Qt::AlignCenter);
 
-    // Иконка с рамкой в цвет ранга
     m_iconFrame = new QWidget(this);
     m_iconFrame->setObjectName("itemIconFrame");
     m_iconFrame->setFixedSize(80, 80);
@@ -47,7 +46,6 @@ void SidebarItemInfo::setupUi()
     layout->addWidget(m_iconFrame, 0, Qt::AlignHCenter);
     layout->addSpacing(4);
 
-    // Название
     m_nameLabel = new QLabel(this);
     m_nameLabel->setObjectName("sidebarItemName");
     m_nameLabel->setAlignment(Qt::AlignCenter);
@@ -55,7 +53,6 @@ void SidebarItemInfo::setupUi()
     m_nameLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
     layout->addWidget(m_nameLabel);
 
-    // Ранг · Категория
     m_infoLabel = new QLabel(this);
     m_infoLabel->setObjectName("sidebarItemInfoLine");
     m_infoLabel->setAlignment(Qt::AlignCenter);
@@ -69,7 +66,6 @@ void SidebarItemInfo::setItem(const ItemData& item)
 {
     QColor color = colorForRank(item.color);
 
-    // Перекрашиваем ТОЛЬКО внутреннюю рамку иконки
     m_iconFrame->setStyleSheet(QString(
         "QWidget#itemIconFrame {"
         "  background-color: #181411;"
@@ -81,8 +77,6 @@ void SidebarItemInfo::setItem(const ItemData& item)
 
     QString rankName = rankNameForColor(item.color);
     QString catName = categoryName(item.category);
-
-    // Разделитель |, и весь текст красим в цвет ранга
     m_infoLabel->setText(rankName + "  |  " + catName);
     m_infoLabel->setStyleSheet(QString("color: %1;").arg(color.name()));
 

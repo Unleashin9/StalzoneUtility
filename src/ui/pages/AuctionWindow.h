@@ -2,6 +2,7 @@
 #include <QWidget>
 #include <QSet>
 #include <QVector>
+#include <QJsonArray>
 #include "core/GameDatabase.h"
 
 class QPushButton;
@@ -14,6 +15,7 @@ class QButtonGroup;
 class QNetworkAccessManager;
 class SidebarButton;
 class SidebarItemInfo;
+class SidebarAuctionStats;
 class ItemDetailWidget;
 class StalzoneAPI;
 class GameDatabase;
@@ -39,6 +41,10 @@ private slots:
     void onSearchTextChanged(const QString& text);
     void onFavoriteToggled(const QString& itemId, bool isFavorite);
     void onCardClicked(const ItemData& item);
+    void onDetailLotsReceived(const QJsonArray& lots);
+    void onDetailApiError(const QString& error);
+    void onRaritiesChanged(const QSet<int>& selectedRarities);
+    void onEnchantChanged(int minValue, int maxValue);
 
 private:
     void setupUi();
@@ -92,10 +98,22 @@ private:
     QSet<QString> m_allowedItemIds;
     QSet<QString> m_favoriteIds;
 
-    // Стеки для переключения между каталогом и деталями
-    QStackedWidget* m_sidebarStack = nullptr;
+    // Сайдбары (только по одному экземпляру!)
+    QWidget* m_normalSidebar = nullptr;
+    QWidget* m_emptySidebar = nullptr;
+
+    // Правая часть
     QStackedWidget* m_rightStack = nullptr;
     ItemDetailWidget* m_itemDetailWidget = nullptr;
+
+    // Виджеты в пустом сайдбаре
     SidebarItemInfo* m_sidebarItemInfo = nullptr;
-    QWidget* m_emptySidebar = nullptr;
+    SidebarAuctionStats* m_auctionStats = nullptr;
+
+    // Фильтры (заглушки)
+    QSet<int> m_selectedRarities;
+    int m_enchantMin = 0;
+    int m_enchantMax = 0;
+
+    QString m_currentDetailItemId;
 };

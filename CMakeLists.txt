@@ -49,6 +49,10 @@ add_executable(StalzoneUtility
     src/ui/widgets/ItemDetailWidget.h
     src/ui/widgets/SidebarItemInfo.cpp
     src/ui/widgets/SidebarItemInfo.h
+    src/ui/widgets/SidebarAuctionStats.cpp
+    src/ui/widgets/SidebarAuctionStats.h
+    src/ui/widgets/FiltersBar.cpp
+    src/ui/widgets/FiltersBar.h
     resources.qrc
 )
 
