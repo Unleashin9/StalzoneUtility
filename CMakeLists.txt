@@ -45,6 +45,10 @@ add_executable(StalzoneUtility
     src/ui/widgets/ProfileMenu.h
     src/ui/widgets/RequirementsPanel.cpp
     src/ui/widgets/RequirementsPanel.h
+    src/ui/widgets/ItemDetailWidget.cpp
+    src/ui/widgets/ItemDetailWidget.h
+    src/ui/widgets/SidebarItemInfo.cpp
+    src/ui/widgets/SidebarItemInfo.h
     resources.qrc
 )
 

@@ -13,6 +13,8 @@ class QListWidget;
 class QButtonGroup;
 class QNetworkAccessManager;
 class SidebarButton;
+class SidebarItemInfo;
+class ItemDetailWidget;
 class StalzoneAPI;
 class GameDatabase;
 
@@ -36,11 +38,12 @@ private slots:
     void onQuickAccessClicked(int id);
     void onSearchTextChanged(const QString& text);
     void onFavoriteToggled(const QString& itemId, bool isFavorite);
-    void onCardClicked(const QString& itemId);
+    void onCardClicked(const ItemData& item);
 
 private:
     void setupUi();
     QWidget* createQuickAccessSidebar();
+    QWidget* createEmptySidebar();
     QWidget* createRightArea();
     QWidget* createRightTopBar();
     QWidget* createRankPopup();
@@ -88,4 +91,11 @@ private:
 
     QSet<QString> m_allowedItemIds;
     QSet<QString> m_favoriteIds;
+
+    // Стеки для переключения между каталогом и деталями
+    QStackedWidget* m_sidebarStack = nullptr;
+    QStackedWidget* m_rightStack = nullptr;
+    ItemDetailWidget* m_itemDetailWidget = nullptr;
+    SidebarItemInfo* m_sidebarItemInfo = nullptr;
+    QWidget* m_emptySidebar = nullptr;
 };

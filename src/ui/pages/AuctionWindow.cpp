@@ -3,6 +3,8 @@
 #include "ui/widgets/ItemCard.h"
 #include "ui/widgets/SidebarButton.h"  // <--- ВОТ ЭТОЙ СТРОКИ НЕ ХВАТАЛО
 #include "ui/widgets/Toast.h"
+#include "ui/widgets/ItemDetailWidget.h"
+#include "ui/widgets/SidebarItemInfo.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -72,9 +74,12 @@ void AuctionWindow::onFavoriteToggled(const QString& itemId, bool isFavorite)
     updateFavoritesCounter();
 }
 
-void AuctionWindow::onCardClicked(const QString& itemId)
+void AuctionWindow::onCardClicked(const ItemData& item)
 {
-    Toast::showMessage(this, QString("%1 — детали в разработке").arg(m_db->itemName(itemId)), false);
+    m_sidebarItemInfo->setItem(item);
+    m_itemDetailWidget->setItem(item);
+    m_sidebarStack->setCurrentIndex(1);
+    m_rightStack->setCurrentIndex(1);
 }
 
 void AuctionWindow::setupUi()
@@ -144,14 +149,35 @@ void AuctionWindow::setupUi()
     // === КОНТЕНТ ===
     auto* contentStack = new QStackedWidget(this);
 
+    // Страница "Каталог"
     auto* catalogPage = new QWidget(contentStack);
     auto* catalogLayout = new QHBoxLayout(catalogPage);
     catalogLayout->setContentsMargins(0, 0, 0, 0);
     catalogLayout->setSpacing(0);
-    catalogLayout->addWidget(createQuickAccessSidebar());
-    catalogLayout->addWidget(createRightArea(), 1);
+
+    // Левый сайдбар — стек (обычный / пустой)
+    m_sidebarStack = new QStackedWidget(catalogPage);
+    m_sidebarStack->addWidget(createQuickAccessSidebar()); // страница 0
+    m_emptySidebar = createEmptySidebar();
+    m_sidebarStack->addWidget(m_emptySidebar);             // страница 1
+    catalogLayout->addWidget(m_sidebarStack);
+
+    // Правая часть — стек (каталог / детали)
+    m_rightStack = new QStackedWidget(catalogPage);
+    m_rightStack->addWidget(createRightArea());             // страница 0 - каталог
+
+    m_itemDetailWidget = new ItemDetailWidget(catalogPage);
+    connect(m_itemDetailWidget, &ItemDetailWidget::backRequested, this, [this]() {
+        // Возврат к каталогу: показываем обычный сайдбар и сетку
+        m_sidebarStack->setCurrentIndex(0);
+        m_rightStack->setCurrentIndex(0);
+        });
+    m_rightStack->addWidget(m_itemDetailWidget);            // страница 1 - детали
+
+    catalogLayout->addWidget(m_rightStack, 1);
     contentStack->addWidget(catalogPage);
 
+    // Страницы Мониторинг / Перепродажа (пока заглушки)
     auto* monitoringPage = new QWidget(contentStack);
     auto* monLayout = new QVBoxLayout(monitoringPage);
     monLayout->addWidget(new QLabel("Мониторинг в разработке...", monitoringPage), 0, Qt::AlignCenter);
@@ -164,7 +190,12 @@ void AuctionWindow::setupUi()
 
     mainLayout->addWidget(contentStack, 1);
 
-    connect(m_catalogNavBtn, &QPushButton::clicked, this, [contentStack]() { contentStack->setCurrentIndex(0); });
+    connect(m_catalogNavBtn, &QPushButton::clicked, this, [contentStack, this]() {
+        contentStack->setCurrentIndex(0);
+        // Возврат в каталог на всякий случай
+        m_sidebarStack->setCurrentIndex(0);
+        m_rightStack->setCurrentIndex(0);
+        });
     connect(m_monitoringNavBtn, &QPushButton::clicked, this, [contentStack]() { contentStack->setCurrentIndex(1); });
     connect(m_resaleNavBtn, &QPushButton::clicked, this, [contentStack]() { contentStack->setCurrentIndex(2); });
 
@@ -262,6 +293,25 @@ QWidget* AuctionWindow::createQuickAccessSidebar()
     layout->addLayout(m_categoryLayout);
     layout->addStretch();
 
+    return sidebar;
+}
+
+QWidget* AuctionWindow::createEmptySidebar()
+{
+    auto* sidebar = new QWidget(this);
+    sidebar->setObjectName("quickAccessSidebar");
+    sidebar->setFixedWidth(300);
+    sidebar->setAttribute(Qt::WA_StyledBackground, true);
+
+    auto* layout = new QVBoxLayout(sidebar);
+    layout->setContentsMargins(0, 20, 0, 0);
+    layout->setSpacing(0);
+    layout->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+
+    m_sidebarItemInfo = new SidebarItemInfo(sidebar);
+    layout->addWidget(m_sidebarItemInfo, 0, Qt::AlignHCenter);
+
+    layout->addStretch();
     return sidebar;
 }
 

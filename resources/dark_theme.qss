@@ -354,6 +354,51 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     border-top: 1px solid #3A2F26;
 }
 
+/* Страница деталей предмета */
+#auctionRoot #itemDetailRoot {
+    background-color: #181411;
+}
+
+#auctionRoot #itemDetailName {
+    font-size: 28px;
+    font-weight: 700;
+    background: transparent;
+}
+
+#auctionRoot #itemDetailSub {
+    font-size: 16px;
+    color: #A8998A;
+    background: transparent;
+}
+
+#auctionRoot #itemDetailPrice {
+    font-size: 20px;
+    font-weight: 600;
+    color: @accent@;
+    background: transparent;
+}
+
+/* Карточка предмета в сайдбаре */
+#auctionRoot #sidebarItemInfo {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 12px;
+}
+
+#auctionRoot #sidebarItemName {
+    color: #F5E6D3;
+    font-size: 15px;
+    font-weight: 700;
+    background: transparent;
+}
+
+#auctionRoot #sidebarItemInfoLine {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: transparent;
+}
+
 /* ========================================================= */
 /* === 4. SETTINGS WINDOW ===                                */
 /* ========================================================= */

@@ -220,7 +220,7 @@ void ItemCard::mouseReleaseEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton && m_pressed) {
         m_pressed = false;
         if (rect().contains(event->pos())) {
-            emit cardClicked(m_item.id);
+            emit cardClicked(m_item);
         }
     }
     QWidget::mouseReleaseEvent(event);

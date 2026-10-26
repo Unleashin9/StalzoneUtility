@@ -27,7 +27,7 @@ public:
 
 signals:
     void favoriteToggled(const QString& itemId, bool isFavorite);
-    void cardClicked(const QString& itemId);
+    void cardClicked(const ItemData& item); // <--- ИЗМЕНЕНО
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
