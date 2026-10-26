@@ -25,6 +25,7 @@
 #include <QDebug>
 #include <algorithm>
 #include <limits>
+#include <QDateTime>
 
 AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent)
     : QWidget(parent), m_api(api), m_db(db)
@@ -476,8 +477,6 @@ void AuctionWindow::onCardClicked(const ItemData& item)
 
 void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
 {
-    qDebug() << "[onDetailLotsReceived] Received" << lots.size() << "lots";
-
     if (!m_auctionStats) return;
 
     if (!lots.isEmpty()) {
@@ -487,6 +486,8 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
 
     if (lots.isEmpty()) {
         m_auctionStats->setStats(0, 0, 0, 0);
+        m_itemDetailWidget->setBestPrice(0, 0);
+        m_itemDetailWidget->setBestLot(0, 0, QDateTime(), 0);
         return;
     }
 
@@ -495,6 +496,7 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
     double minPrice = std::numeric_limits<double>::max();
     double maxPrice = 0;
     int validLots = 0;
+    QJsonObject bestLot;
 
     for (const QJsonValue& v : lots) {
         QJsonObject lot = v.toObject();
@@ -504,19 +506,34 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
 
         double pricePerItem = static_cast<double>(buyoutPrice) / amount;
         sumPerItem += pricePerItem;
-        if (pricePerItem < minPrice) minPrice = pricePerItem;
+        if (pricePerItem < minPrice) {
+            minPrice = pricePerItem;
+            bestLot = lot;
+        }
         if (pricePerItem > maxPrice) maxPrice = pricePerItem;
         validLots++;
     }
 
     if (validLots == 0) {
         m_auctionStats->setStats(0, 0, 0, 0);
+        m_itemDetailWidget->setBestPrice(0, 0);
+        m_itemDetailWidget->setBestLot(0, 0, QDateTime(), 0);
         return;
     }
 
     m_auctionStats->setStats(count, sumPerItem / validLots, minPrice, maxPrice);
+    m_itemDetailWidget->setBestPrice(qRound(minPrice), qRound(sumPerItem / validLots));
 
-    m_itemDetailWidget->setBestPrice(qRound(minPrice));
+    int bestLotPrice = bestLot["buyoutPrice"].toInt();
+    int bestLotAmount = bestLot["amount"].toInt();
+    QString endTimeStr = bestLot["endTime"].toString();
+
+    QDateTime endTime = QDateTime::fromString(endTimeStr, Qt::ISODate);
+    if (!endTime.isValid()) {
+        endTime = QDateTime::fromString(endTimeStr, Qt::ISODateWithMs);
+    }
+
+    m_itemDetailWidget->setBestLot(bestLotPrice, bestLotAmount, endTime, count);
 }
 
 void AuctionWindow::onDetailApiError(const QString& error)

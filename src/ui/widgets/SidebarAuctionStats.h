@@ -15,6 +15,7 @@ public:
 
 private:
     void setupUi();
+    QString formatPrice(int value) const; // <--- НОВОЕ
 
     QLabel* m_lotsValue = nullptr;
     QLabel* m_avgValue = nullptr;

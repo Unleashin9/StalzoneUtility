@@ -46,8 +46,6 @@ void SidebarAuctionStats::setupUi()
     addBlock("МИНИМАЛЬНАЯ ЦЕНА", m_minValue);
     addDivider();
     addBlock("МАКСИМАЛЬНАЯ ЦЕНА", m_maxValue);
-
-    layout->addStretch();
 }
 
 void SidebarAuctionStats::reset()
@@ -60,10 +58,10 @@ void SidebarAuctionStats::reset()
 
 void SidebarAuctionStats::setLoading()
 {
-    m_lotsValue->setText("...");
-    m_avgValue->setText("...");
-    m_minValue->setText("...");
-    m_maxValue->setText("...");
+    m_lotsValue->setText("Загрузка...");
+    m_avgValue->setText("Загрузка...");
+    m_minValue->setText("Загрузка...");
+    m_maxValue->setText("Загрузка...");
 }
 
 void SidebarAuctionStats::setStats(int lotsCount, double avgPrice, double minPrice, double maxPrice)
@@ -75,8 +73,25 @@ void SidebarAuctionStats::setStats(int lotsCount, double avgPrice, double minPri
         m_maxValue->setText("—");
         return;
     }
-    m_lotsValue->setText(QString::number(lotsCount));
-    m_avgValue->setText(QString::number(qRound(avgPrice)) + " ₽");
-    m_minValue->setText(QString::number(qRound(minPrice)) + " ₽");
-    m_maxValue->setText(QString::number(qRound(maxPrice)) + " ₽");
+    m_lotsValue->setText(formatPrice(lotsCount));
+    m_avgValue->setText(formatPrice(qRound(avgPrice)) + " ₽");
+    m_minValue->setText(formatPrice(qRound(minPrice)) + " ₽");
+    m_maxValue->setText(formatPrice(qRound(maxPrice)) + " ₽");
+}
+
+QString SidebarAuctionStats::formatPrice(int value) const
+{
+    QString s = QString::number(value);
+    if (value < 0) s = s.mid(1); // убираем минус на время форматирования
+
+    QString result;
+    int count = 0;
+    for (int i = s.length() - 1; i >= 0; --i) {
+        result.prepend(s[i]);
+        ++count;
+        if (count % 3 == 0 && i > 0) {
+            result.prepend(' ');
+        }
+    }
+    return (value < 0 ? "-" : "") + result;
 }

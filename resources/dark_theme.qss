@@ -454,15 +454,58 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
 
 #auctionRoot #bestPriceTitle {
     color: @accent@;
-    font-size: 11px;
+    font-size: 17px;      /* было 11px */
     font-weight: 600;
     background: transparent;
 }
 
 #auctionRoot #bestPriceValue {
     color: #F5E6D3;
-    font-size: 16px;
+    font-size: 25px;      /* было 16px */
     font-weight: 700;
+    background: transparent;
+}
+
+#auctionRoot #bestPriceUnit {
+    color: #A8998A;
+    font-size: 14px;
+    font-weight: 500;
+    background: transparent;
+}
+
+#auctionRoot #bestPriceColTitle {
+    color: #A8998A;
+    font-size: 17px;
+    font-weight: 500;
+    background: transparent;
+}
+
+#auctionRoot #bestPriceColValue {
+    color: #F5E6D3;
+    font-size: 20px;      /* было 25px */
+    font-weight: 700;
+    background: transparent;
+}
+
+#auctionRoot #bestPriceColValueGreen {
+    color: #7def7d;
+    font-size: 20px;      /* было 25px */
+    font-weight: 700;
+    background: transparent;
+}
+
+#auctionRoot #bestPriceLoadedLots {
+    color: #A8998A;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+}
+
+#auctionRoot #bestPriceColTitle {
+    color: #A8998A;
+    font-size: 13px;      /* было 17px */
+    font-weight: 600;     /* было 700 — чуть тоньше, мягче */
+    letter-spacing: 0.5px;
     background: transparent;
 }
 
