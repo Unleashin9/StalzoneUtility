@@ -35,7 +35,7 @@ AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent
     setAttribute(Qt::WA_StyledBackground, true);
 
     m_netManager = new QNetworkAccessManager(this);
-    m_allowedItemIds = { "wj6l2", "qj1lk", "g35n", "wg53" };
+    m_allowedItemIds = { "wj6l2", "qj1lk", "g35n", "wg53", "qodk" }; // Добавил qodk для теста
 
     loadFavorites();
 
@@ -50,6 +50,7 @@ AuctionWindow::AuctionWindow(StalzoneAPI* api, GameDatabase* db, QWidget* parent
 
     connect(m_api, &StalzoneAPI::allLotsReceived, this, &AuctionWindow::onDetailLotsReceived);
     connect(m_api, &StalzoneAPI::errorOccurred, this, &AuctionWindow::onDetailApiError);
+    connect(m_api, &StalzoneAPI::loadingProgress, this, &AuctionWindow::onLoadingProgress);
 }
 
 void AuctionWindow::loadFavorites()
@@ -455,8 +456,6 @@ void AuctionWindow::populateItems(const QString& groupName)
 
 void AuctionWindow::onCardClicked(const ItemData& item)
 {
-    qDebug() << "[onCardClicked] Item:" << item.id << item.name;
-
     m_sidebarItemInfo->setItem(item);
     m_itemDetailWidget->setItem(item);
 
@@ -470,23 +469,24 @@ void AuctionWindow::onCardClicked(const ItemData& item)
         m_auctionStats->setLoading();
     }
     m_itemDetailWidget->setBestPriceLoading();
+    m_itemDetailWidget->showLotsLoading(); // Включаем экран загрузки
 
     m_api->fetchAllAuctionLots("ru", item.id);
 }
 
+
 void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
 {
+    m_itemDetailWidget->hideLotsLoading();
+
     if (!m_auctionStats) return;
 
-    if (!lots.isEmpty()) {
-        QString responseItemId = lots.first().toObject()["itemId"].toString();
-        if (responseItemId != m_currentDetailItemId) return;
-    }
-
+    // Убрана строгая проверка responseItemId, так как она блокировала обновление UI
     if (lots.isEmpty()) {
         m_auctionStats->setStats(0, 0, 0, 0);
         m_itemDetailWidget->setBestPrice(0, 0);
         m_itemDetailWidget->setBestLot(0, 0, QDateTime(), 0);
+        m_itemDetailWidget->setLots(lots);
         return;
     }
 
@@ -500,10 +500,14 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
     for (const QJsonValue& v : lots) {
         QJsonObject lot = v.toObject();
         int amount = lot["amount"].toInt();
+        // Если нет выкупа, берем стартовую цену
         int buyoutPrice = lot["buyoutPrice"].toInt();
+        int startPrice = lot["startPrice"].toInt();
+        int actualPrice = (buyoutPrice > 0) ? buyoutPrice : startPrice;
+
         if (amount <= 0) continue;
 
-        double pricePerItem = static_cast<double>(buyoutPrice) / amount;
+        double pricePerItem = static_cast<double>(actualPrice) / amount;
         sumPerItem += pricePerItem;
         if (pricePerItem < minPrice) {
             minPrice = pricePerItem;
@@ -517,16 +521,19 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
         m_auctionStats->setStats(0, 0, 0, 0);
         m_itemDetailWidget->setBestPrice(0, 0);
         m_itemDetailWidget->setBestLot(0, 0, QDateTime(), 0);
+        m_itemDetailWidget->setLots(lots);
         return;
     }
 
     m_auctionStats->setStats(count, sumPerItem / validLots, minPrice, maxPrice);
     m_itemDetailWidget->setBestPrice(qRound(minPrice), qRound(sumPerItem / validLots));
 
-    int bestLotPrice = bestLot["buyoutPrice"].toInt();
+    int bestLotBuyout = bestLot["buyoutPrice"].toInt();
+    int bestLotStart = bestLot["startPrice"].toInt();
+    int bestLotPrice = (bestLotBuyout > 0) ? bestLotBuyout : bestLotStart;
     int bestLotAmount = bestLot["amount"].toInt();
-    QString endTimeStr = bestLot["endTime"].toString();
 
+    QString endTimeStr = bestLot["endTime"].toString();
     QDateTime endTime = QDateTime::fromString(endTimeStr, Qt::ISODate);
     if (!endTime.isValid()) {
         endTime = QDateTime::fromString(endTimeStr, Qt::ISODateWithMs);
@@ -539,21 +546,26 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
 void AuctionWindow::onDetailApiError(const QString& error)
 {
     Q_UNUSED(error);
+    m_itemDetailWidget->hideLotsLoading(); // Выключаем экран загрузки
     if (m_auctionStats) m_auctionStats->reset();
     m_itemDetailWidget->setBestPriceEmpty();
+    m_itemDetailWidget->setLots(QJsonArray()); // Очищаем таблицу
+}
+
+void AuctionWindow::onLoadingProgress(int current, int total)
+{
+    m_itemDetailWidget->setLotsLoadingProgress(current, total);
 }
 
 void AuctionWindow::onRaritiesChanged(const QSet<int>& selectedRarities)
 {
     m_selectedRarities = selectedRarities;
-    // TODO: подключить фильтр по quality, когда получим qlt из API
 }
 
 void AuctionWindow::onEnchantChanged(int minValue, int maxValue)
 {
     m_enchantMin = minValue;
     m_enchantMax = maxValue;
-    // TODO: подключить фильтр по заточке
 }
 
 void AuctionWindow::onDatabaseLoaded()

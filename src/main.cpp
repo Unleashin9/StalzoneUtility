@@ -17,7 +17,6 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationName("Utility");
     QCoreApplication::setApplicationVersion("0.1.0");
 
-    // === ЗАГРУЗКА ВСЕХ ШРИФТОВ ИЗ resources/fonts/ ===
     QDirIterator it(":/resources/fonts", { "*.ttf", "*.otf" }, QDir::Files);
     while (it.hasNext()) {
         const QString fontPath = it.next();
@@ -33,11 +32,6 @@ int main(int argc, char* argv[])
         }
     }
 
-    // Проверка: какие веса Qt видит для IBM Plex Sans
-    QFontDatabase db;
-    qDebug() << "Available IBM Plex Sans styles:" << db.styles("IBM Plex Sans");
-
-    // Базовый шрифт — только семейство и размер. Веса берём из QSS.
     QFont appFont("IBM Plex Sans");
     appFont.setPointSize(10);
     app.setFont(appFont);

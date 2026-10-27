@@ -39,15 +39,11 @@ void StalzoneAPI::fetchAuctionLots(const QString& region, const QString& itemId)
 
 void StalzoneAPI::fetchAllAuctionLots(const QString& region, const QString& itemId)
 {
-    qDebug() << "[API] fetchAllAuctionLots called for" << itemId;
-
     if (m_accessToken.isEmpty()) {
-        qDebug() << "[API] Token is empty!";
         emit errorOccurred("Token is empty. Check token.txt");
         return;
     }
 
-    // ОТМЕНЯЕМ предыдущий запрос, если он ещё в процессе
     if (m_currentReply) {
         m_currentReply->disconnect(this);
         m_currentReply->abort();
@@ -56,10 +52,11 @@ void StalzoneAPI::fetchAllAuctionLots(const QString& region, const QString& item
     }
 
     m_accumulatedLots = QJsonArray();
+    m_currentRegion = region;
     m_currentItemId = itemId;
     m_currentOffset = 0;
 
-    QString url = QString("https://eapi.stalzone.net/%1/auction/%2/lots?limit=%3&offset=0")
+    QString url = QString("https://eapi.stalcraft.net/%1/auction/%2/lots?additional=true&limit=%3&offset=0")
         .arg(region, itemId).arg(m_pageLimit);
     requestNextPage(url);
 }
@@ -74,7 +71,6 @@ void StalzoneAPI::requestNextPage(const QString& url)
 
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         if (reply != m_currentReply) {
-            qDebug() << "[API] Reply is stale, ignoring";
             reply->deleteLater();
             return;
         }
@@ -83,40 +79,42 @@ void StalzoneAPI::requestNextPage(const QString& url)
             QByteArray data = reply->readAll();
             QJsonDocument doc = QJsonDocument::fromJson(data);
             QJsonArray lots;
+            int total = 0;
 
             if (doc.isArray()) {
                 lots = doc.array();
+                total = lots.size();
             }
-            else if (doc.isObject() && doc.object().contains("lots")) {
+            else if (doc.isObject()) {
                 lots = doc.object().value("lots").toArray();
+                total = doc.object().value("total").toInt();
             }
 
             for (const QJsonValue& v : lots) {
                 m_accumulatedLots.append(v);
             }
             int received = lots.size();
-            qDebug() << "[API] Page received:" << received << "lots. Total:" << m_accumulatedLots.size();
+
+            // Отправляем прогресс загрузки
+            emit loadingProgress(m_accumulatedLots.size(), total);
 
             m_currentOffset += received;
 
-            if (received < m_pageLimit || m_accumulatedLots.size() >= m_maxTotalLots) {
-                qDebug() << "[API] Emitting allLotsReceived with" << m_accumulatedLots.size() << "lots";
+            if (received < m_pageLimit || m_accumulatedLots.size() >= m_maxTotalLots || (total > 0 && m_accumulatedLots.size() >= total)) {
                 emit allLotsReceived(m_accumulatedLots);
                 reply->deleteLater();
                 m_currentReply = nullptr;
             }
             else {
-                QString baseUrl = QString("https://eapi.stalzone.net/ru/auction/%1/lots?limit=%2&offset=%3")
-                    .arg(m_currentItemId).arg(m_pageLimit).arg(m_currentOffset);
+                QString baseUrl = QString("https://eapi.stalcraft.net/%1/auction/%2/lots?additional=true&limit=%3&offset=%4")
+                    .arg(m_currentRegion, m_currentItemId).arg(m_pageLimit).arg(m_currentOffset);
                 reply->deleteLater();
                 m_currentReply = nullptr;
                 requestNextPage(baseUrl);
             }
         }
         else {
-            qDebug() << "[API] Error:" << reply->errorString();
-            int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-            emit errorOccurred(QString("API Error (HTTP %1): %2").arg(statusCode).arg(reply->errorString()));
+            emit errorOccurred(QString("API Error: %1").arg(reply->errorString()));
             reply->deleteLater();
             m_currentReply = nullptr;
         }

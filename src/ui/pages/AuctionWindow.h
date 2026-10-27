@@ -43,6 +43,7 @@ private slots:
     void onCardClicked(const ItemData& item);
     void onDetailLotsReceived(const QJsonArray& lots);
     void onDetailApiError(const QString& error);
+    void onLoadingProgress(int current, int total);
     void onRaritiesChanged(const QSet<int>& selectedRarities);
     void onEnchantChanged(int minValue, int maxValue);
 

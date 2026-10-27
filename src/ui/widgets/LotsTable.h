@@ -1,11 +1,16 @@
 ﻿#pragma once
+
 #include <QWidget>
 #include <QJsonArray>
-#include <QDateTime>
-#include <QVector>
+#include <QString>
 
-class QTableWidget;
+class QTableView;
 class QTimer;
+class QResizeEvent;
+class QProgressBar;
+class QStackedLayout;
+class QScrollBar;
+class LotsModel;
 
 class LotsTable : public QWidget
 {
@@ -13,19 +18,38 @@ class LotsTable : public QWidget
 public:
     explicit LotsTable(QWidget* parent = nullptr);
 
-    void setLots(const QJsonArray& lots, const QString& itemId,
-        const QString& itemName, const QString& itemIconPath);
+    void setLots(const QJsonArray& lots,
+        const QString& itemId,
+        const QString& itemName,
+        const QString& itemIconPath);
+
     void clear();
+
+    void showLoading();
+    void hideLoading();
+    void setLoadingProgress(int current, int total);
+
+protected:
+    void resizeEvent(QResizeEvent* event) override;
 
 private slots:
     void updateTimers();
 
 private:
     void setupUi();
-    QString formatPrice(int value) const;
-    QString formatTimeLeft(qint64 secsLeft) const;
+    void applyRoundedMask();
+    void adjustColumnWidths();
+    void updateTableHeight(); // <--- НОВЫЙ МЕТОД
 
-    QTableWidget* m_table = nullptr;
+    QWidget* m_tableContainer = nullptr;
+    QWidget* m_scrollContainer = nullptr;
+
+    QStackedLayout* m_stackLayout = nullptr;
+    QWidget* m_loadingWidget = nullptr;
+    QProgressBar* m_progressBar = nullptr;
+    QScrollBar* m_externalScrollBar = nullptr;
+
+    QTableView* m_view = nullptr;
+    LotsModel* m_model = nullptr;
     QTimer* m_timer = nullptr;
-    QVector<QDateTime> m_endTimes;
 };

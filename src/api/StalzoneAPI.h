@@ -19,6 +19,7 @@ signals:
     void lotsReceived(const QJsonArray& lots);
     void allLotsReceived(const QJsonArray& allLots);
     void errorOccurred(const QString& errorString);
+    void loadingProgress(int current, int total); // <--- НОВОЕ
 
 private:
     bool loadTokenFromFile(const QString& filePath);
@@ -29,10 +30,11 @@ private:
     QString m_accessToken;
 
     QJsonArray m_accumulatedLots;
+    QString m_currentRegion;
     QString m_currentItemId;
     int m_currentOffset = 0;
     const int m_pageLimit = 200;
     const int m_maxTotalLots = 4000;
 
-    QNetworkReply* m_currentReply = nullptr; // <--- НОВОЕ
+    QNetworkReply* m_currentReply = nullptr;
 };

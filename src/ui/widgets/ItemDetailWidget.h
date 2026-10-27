@@ -24,6 +24,11 @@ public:
 
     void setLots(const QJsonArray& lots);
 
+    // Новые методы для управления загрузкой
+    void showLotsLoading();
+    void hideLotsLoading();
+    void setLotsLoadingProgress(int current, int total);
+
 private slots:
     void updateTimeLeft();
 

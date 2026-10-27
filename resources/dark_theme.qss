@@ -519,15 +519,9 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
 #auctionRoot #lotsTable {
     background-color: #1F1A16;
     alternate-background-color: #181411;
-    color: #F5E6D3;
     border: none;
     gridline-color: transparent;
     outline: none;
-}
-
-#auctionRoot #lotsTable::item {
-    padding: 8px 15px;
-    border: none;
 }
 
 #auctionRoot #lotsTable QHeaderView::section {

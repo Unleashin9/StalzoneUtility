@@ -156,7 +156,9 @@ void ItemDetailWidget::setupUi()
     lotsContainerLayout->setSpacing(0);
 
     m_lotsTable = new LotsTable(lotsContainer);
-    lotsContainerLayout->addWidget(m_lotsTable);
+
+    lotsContainerLayout->addWidget(m_lotsTable, 0); // Таблица занимает ровно свою высоту
+    lotsContainerLayout->addStretch(1); // Пустота снизу забирает всё оставшееся место
 
     mainLayout->addWidget(lotsContainer, 1);
 
@@ -177,7 +179,7 @@ void ItemDetailWidget::setBestPrice(int bestPrice, int avgPrice)
 {
     if (!m_bestPriceValue) return;
     if (bestPrice <= 0) {
-        m_bestPriceValue->setText("—");
+        m_bestPriceValue->setText("Нет предложений");
         m_bestPriceUnit->hide();
         m_bestPriceBadge->hide();
         return;
@@ -304,4 +306,19 @@ QString ItemDetailWidget::formatPrice(int value) const
         }
     }
     return (value < 0 ? "-" : "") + result;
+}
+
+void ItemDetailWidget::showLotsLoading()
+{
+    if (m_lotsTable) m_lotsTable->showLoading();
+}
+
+void ItemDetailWidget::hideLotsLoading()
+{
+    if (m_lotsTable) m_lotsTable->hideLoading();
+}
+
+void ItemDetailWidget::setLotsLoadingProgress(int current, int total)
+{
+    if (m_lotsTable) m_lotsTable->setLoadingProgress(current, total);
 }
