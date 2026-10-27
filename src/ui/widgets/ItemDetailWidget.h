@@ -2,11 +2,13 @@
 #include <QWidget>
 #include <QSet>
 #include <QDateTime>
+#include <QJsonArray>
 #include "core/GameDatabase.h"
 
 class QLabel;
 class QTimer;
 class FiltersBar;
+class LotsTable;
 
 class ItemDetailWidget : public QWidget
 {
@@ -18,8 +20,9 @@ public:
     void setBestPrice(int bestPrice, int avgPrice);
     void setBestPriceLoading();
     void setBestPriceEmpty();
-
     void setBestLot(int lotPrice, int amount, const QDateTime& endTime, int totalLoadedLots);
+
+    void setLots(const QJsonArray& lots);
 
 private slots:
     void updateTimeLeft();
@@ -30,13 +33,11 @@ signals:
 
 private:
     void setupUi();
-    QColor colorForRank(const QString& colorName) const;
     QString formatPrice(int value) const;
     void updateBestPriceBadge(int bestPrice, int avgPrice);
 
-    QLabel* m_iconLabel = nullptr;
-    QLabel* m_nameLabel = nullptr;
     FiltersBar* m_filtersBar = nullptr;
+    LotsTable* m_lotsTable = nullptr;
 
     QLabel* m_bestPriceIcon = nullptr;
     QLabel* m_bestPriceTitle = nullptr;
@@ -51,4 +52,8 @@ private:
 
     QTimer* m_timeUpdateTimer = nullptr;
     QDateTime m_bestLotEndTime;
+
+    QString m_currentItemId;
+    QString m_currentItemName;
+    QString m_currentItemIcon;
 };

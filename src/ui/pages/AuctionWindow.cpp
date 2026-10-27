@@ -469,7 +469,6 @@ void AuctionWindow::onCardClicked(const ItemData& item)
         m_auctionStats->reset();
         m_auctionStats->setLoading();
     }
-    // НОВОЕ: сброс панели лучшей цены
     m_itemDetailWidget->setBestPriceLoading();
 
     m_api->fetchAllAuctionLots("ru", item.id);
@@ -534,6 +533,7 @@ void AuctionWindow::onDetailLotsReceived(const QJsonArray& lots)
     }
 
     m_itemDetailWidget->setBestLot(bestLotPrice, bestLotAmount, endTime, count);
+    m_itemDetailWidget->setLots(lots);
 }
 
 void AuctionWindow::onDetailApiError(const QString& error)

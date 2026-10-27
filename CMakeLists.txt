@@ -23,6 +23,8 @@ add_executable(StalzoneUtility
     src/core/ThemeManager.h
     src/core/DBManager.cpp
     src/core/DBManager.h
+    src/core/IconCache.cpp
+    src/core/IconCache.h
     src/ui/pages/AuctionWindow.cpp
     src/ui/pages/AuctionWindow.h
     src/ui/pages/BarterWindow.cpp
@@ -53,6 +55,8 @@ add_executable(StalzoneUtility
     src/ui/widgets/SidebarAuctionStats.h
     src/ui/widgets/FiltersBar.cpp
     src/ui/widgets/FiltersBar.h
+    src/ui/widgets/LotsTable.cpp
+    src/ui/widgets/LotsTable.h
     resources.qrc
 )
 

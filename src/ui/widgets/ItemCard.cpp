@@ -1,5 +1,6 @@
 ﻿#include "ItemCard.h"
 #include "core/ThemeManager.h"
+#include "core/IconCache.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -7,11 +8,6 @@
 #include <QPushButton>
 #include <QMouseEvent>
 #include <QEnterEvent>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QPixmap>
-#include <QPointer>
 #include <QPainter>
 #include <QPainterPath>
 #include <QResizeEvent>
@@ -70,39 +66,15 @@ ItemCard::ItemCard(const ItemData& item, QNetworkAccessManager* netManager,
 
     setupUi();
 
-    if (m_netManager && !m_item.iconPath.isEmpty()) {
-        QString url = "https://github.com/EXBO-Studio/stalzone-database/raw/main/ru" + m_item.iconPath;
-        QNetworkRequest request{ QUrl(url) };
-        m_reply = m_netManager->get(request);
-
-        QPointer<ItemCard> self(this);
-        connect(m_reply, &QNetworkReply::finished, this, [this, self]() {
-            if (!self || !m_reply) return;
-
-            if (m_reply->error() == QNetworkReply::NoError) {
-                QByteArray data = m_reply->readAll();
-                if (!data.isEmpty()) {
-                    QPixmap pixmap;
-                    if (pixmap.loadFromData(data)) {
-                        setIcon(pixmap);
-                    }
-                }
-            }
-            m_reply->deleteLater();
-            m_reply = nullptr;
-            });
+    if (!m_item.iconPath.isEmpty()) {
+        IconCache::instance().getIcon(m_item.id, m_item.iconPath,
+            [this](const QPixmap& pixmap) {
+                setIcon(pixmap);
+            }, this);
     }
 }
 
-ItemCard::~ItemCard()
-{
-    if (m_reply) {
-        m_reply->disconnect(this);
-        m_reply->abort();
-        m_reply->deleteLater();
-        m_reply = nullptr;
-    }
-}
+ItemCard::~ItemCard() = default;
 
 void ItemCard::setupUi()
 {
@@ -110,7 +82,6 @@ void ItemCard::setupUi()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    // === ИКОНКА ===
     m_iconContainer = new QWidget(this);
     m_iconContainer->setFixedSize(170, 150);
     m_iconContainer->setObjectName("itemCardIconContainer");
@@ -127,7 +98,6 @@ void ItemCard::setupUi()
 
     layout->addWidget(m_iconContainer);
 
-    // === НАЗВАНИЕ ===
     m_nameContainer = new QWidget(this);
     m_nameContainer->setFixedSize(170, 60);
     m_nameContainer->setObjectName("itemCardNameContainer");
@@ -150,12 +120,10 @@ void ItemCard::setupUi()
     nameLayout->addWidget(m_nameLabel);
     layout->addWidget(m_nameContainer);
 
-    // === ОБВОДКА ===
     m_overlay = new BorderOverlay(this, colorForRank(m_item.color));
     m_overlay->setGeometry(rect());
     m_overlay->raise();
 
-    // === КНОПКА ИЗБРАННОГО ===
     m_favoriteBtn = new QPushButton(this);
     m_favoriteBtn->setObjectName("cardFavoriteBtn");
     m_favoriteBtn->setFixedSize(28, 28);
@@ -228,10 +196,9 @@ void ItemCard::mouseReleaseEvent(QMouseEvent* event)
 
 void ItemCard::enterEvent(QEnterEvent* event)
 {
-    // Подсвечиваем ОБЕ части карточки на тон светлее
     if (m_iconContainer) {
         m_iconContainer->setStyleSheet(
-            "background-color: #252119;" // Чуть светлее #1F1A16
+            "background-color: #252119;"
             "border-top-left-radius: 8px;"
             "border-top-right-radius: 8px;"
             "border: none;"
@@ -239,7 +206,7 @@ void ItemCard::enterEvent(QEnterEvent* event)
     }
     if (m_nameContainer) {
         m_nameContainer->setStyleSheet(
-            "background-color: #1F1A16;" // Чуть светлее #181411
+            "background-color: #1F1A16;"
             "border-bottom-left-radius: 8px;"
             "border-bottom-right-radius: 8px;"
             "border: none;"
@@ -250,7 +217,6 @@ void ItemCard::enterEvent(QEnterEvent* event)
 
 void ItemCard::leaveEvent(QEvent* event)
 {
-    // Сбрасываем стили — вернутся цвета по умолчанию из QSS
     if (m_iconContainer) m_iconContainer->setStyleSheet("");
     if (m_nameContainer) m_nameContainer->setStyleSheet("");
     QWidget::leaveEvent(event);
@@ -258,7 +224,7 @@ void ItemCard::leaveEvent(QEvent* event)
 
 void ItemCard::setIcon(const QPixmap& pixmap)
 {
-    if (m_iconLabel) {
+    if (m_iconLabel && !pixmap.isNull()) {
         m_iconLabel->setPixmap(
             pixmap.scaled(140, 140, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }

@@ -509,6 +509,56 @@ QPushButton:disabled { background-color: #3A2F26; color: #A8998A; }
     background: transparent;
 }
 
+/* Таблица лотов */
+#auctionRoot #lotsTableRoot {
+    background-color: #1F1A16;
+    border: 1px solid #3A2F26;
+    border-radius: 10px;
+}
+
+#auctionRoot #lotsTable {
+    background-color: #1F1A16;
+    alternate-background-color: #181411;
+    color: #F5E6D3;
+    border: none;
+    gridline-color: transparent;
+    outline: none;
+}
+
+#auctionRoot #lotsTable::item {
+    padding: 8px 15px;
+    border: none;
+}
+
+#auctionRoot #lotsTable QHeaderView::section {
+    background-color: #100d0a;
+    color: #A8998A;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 10px 15px;
+    border: none;
+    border-bottom: 1px solid #3A2F26;
+}
+
+/* Тонкий скроллбар */
+#auctionRoot #lotsTable QScrollBar:vertical {
+    background: transparent;
+    width: 8px;
+    margin: 0;
+}
+#auctionRoot #lotsTable QScrollBar::handle:vertical {
+    background: #3A2F26;
+    border-radius: 4px;
+    min-height: 30px;
+}
+#auctionRoot #lotsTable QScrollBar::handle:vertical:hover {
+    background: @accent@;
+}
+#auctionRoot #lotsTable QScrollBar::add-line:vertical,
+#auctionRoot #lotsTable QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
 /* ========================================================= */
 /* === 4. SETTINGS WINDOW ===                                */
 /* ========================================================= */

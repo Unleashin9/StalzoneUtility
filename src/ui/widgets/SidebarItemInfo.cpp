@@ -1,18 +1,17 @@
 ﻿#include "SidebarItemInfo.h"
+#include "core/IconCache.h"
 
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QPixmap>
 
 SidebarItemInfo::SidebarItemInfo(QWidget* parent) : QWidget(parent)
 {
     setObjectName("sidebarItemInfo");
     setAttribute(Qt::WA_StyledBackground, true);
     setFixedSize(210, 150);
-    m_netManager = new QNetworkAccessManager(this);
+    // m_netManager больше не используется — оставлен для совместимости с .h,
+    // его можно удалить из заголовка в будущем.
+    m_netManager = nullptr;
     setupUi();
 }
 
@@ -82,18 +81,12 @@ void SidebarItemInfo::setItem(const ItemData& item)
 
     m_iconLabel->clear();
     if (!item.iconPath.isEmpty()) {
-        QString url = "https://github.com/EXBO-Studio/stalzone-database/raw/main/ru" + item.iconPath;
-        QNetworkRequest request{ QUrl(url) };
-        auto* reply = m_netManager->get(request);
-        connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-            if (reply->error() == QNetworkReply::NoError) {
-                QPixmap pixmap;
-                if (pixmap.loadFromData(reply->readAll())) {
+        IconCache::instance().getIcon(item.id, item.iconPath,
+            [this](const QPixmap& pixmap) {
+                if (!pixmap.isNull()) {
                     m_iconLabel->setPixmap(pixmap.scaled(70, 70, Qt::KeepAspectRatio, Qt::SmoothTransformation));
                 }
-            }
-            reply->deleteLater();
-            });
+            }, this);
     }
 }
 
